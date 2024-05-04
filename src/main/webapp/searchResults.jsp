@@ -80,14 +80,14 @@
     <h1>Search Results</h1>
 </header>
 
-<nav id="main-nav">
-    <a href="#">Home</a>
-    <a href="#">My Bids</a>
-    <a href="#">My Auctions</a>
-    <a href="#">Interested Items</a>
-    <a href="#">My Account</a>
-    <a href="#">Log Out</a>
-</nav>
+<nav>
+            <a href="BuyMe.jsp">Home</a>
+            <a href="myBids.jsp">My Bids</a>
+            <a href="myAuctions.jsp">My Auctions</a>
+            <a href="InterestedAuctions.jsp">Interested Items</a>
+            <a href="my_account.jsp">My Account</a>
+            <a href="logout.jsp">Log Out</a>
+        </nav>
 
 
 
