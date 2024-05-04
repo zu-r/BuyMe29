@@ -8,6 +8,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auction Details</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f8f9fa; /* Set a light background color for the body */
+            padding: 20px; /* Add some padding to the body */
+        }
+        .title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .auctions-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+        .auction-box {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 20px;
+            width: 45%; /* Adjust the width of the auction box */
+            background-color: #ffffff; /* White background for the auction box */
+            margin-bottom: 20px; /* Added margin for spacing */
+        }
+        .auction-box p {
+            margin-bottom: 10px;
+        }
+        .auction-box button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .auction-box button:hover {
+            background-color: #0056b3;
+        }
+        
+        nav {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        nav a {
+            text-decoration: none;
+            color: #fff;
+            padding: 10px 20px;
+        }
+        nav a:hover {
+            background-color: #555;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .filter-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .filter-container form {
+            display: inline-block;
+        }
+    </style>
 </head>
 <body>
     <header>
