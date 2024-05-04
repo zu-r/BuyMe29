@@ -161,52 +161,50 @@ nav a:hover {
 		</form>
 	</div>
 
-	<div class="auctions-container">
-		<%
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-			Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29", "root", "password");
-			PreparedStatement stmt = con.prepareStatement("SELECT v.make, v.model, u.username " + "FROM vehicles v "
-			+ "JOIN auctions a ON v.VIN = a.VIN " + "JOIN users u ON a.seller = u.username " + "WHERE v.type = 'car' "
-			+ "ORDER BY a.close_time DESC " + "LIMIT 6");
-			ResultSet rs = stmt.executeQuery();
+	
+    <div class="auctions-container">
+        <% 
+            try {
+                Class.forName("com.mysql.jdbc.Driver");
+                Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29", "root", "password");
+                PreparedStatement stmt = con.prepareStatement(
+                    "SELECT v.make, v.model, u.username, a.auctionID " +
+                    "FROM vehicles v " +
+                    "JOIN auctions a ON v.VIN = a.VIN " +
+                    "JOIN users u ON a.seller = u.username " +
+                    "WHERE v.type = 'car' " +
+                    "ORDER BY a.close_time DESC " +
+                    "LIMIT 6"
+                );
+                ResultSet rs = stmt.executeQuery();
 
-			while (rs.next()) {
-				String make = rs.getString("make");
-				String model = rs.getString("model");
-				String username = rs.getString("username");
-		%>
-		<div class="auction-box">
-			<p>
-				Make:
-				<%=make%></p>
-			<p>
-				Model:
-				<%=model%></p>
-			<p>
-				Posted By:
-				<%=username%></p>
-			<button
-				onclick="viewAuction('<%=make%>', '<%=model%>', '<%=username%>')">View</button>
-		</div>
-		<%
-		}
-		rs.close();
-		stmt.close();
-		con.close();
-		} catch (Exception e) {
-		e.printStackTrace();
-		}
-		%>
-	</div>
+                while (rs.next()) {
+                    String make = rs.getString("make");
+                    String model = rs.getString("model");
+                    String username = rs.getString("username");
+                    String auctionID = rs.getString("auctionID");
+        %>
+                    <div class="auction-box">
+                        <p>Make: <%= make %></p>
+                        <p>Model: <%= model %></p>
+                        <p>Posted By: <%= username %></p>
+                        <button onclick="viewAuction('<%= auctionID %>')">View</button>
+                    </div>
+        <%
+                }
+                rs.close();
+                stmt.close();
+                con.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        %>
+    </div>
 
-	<script>
-		function viewAuction(make, model, username) {
-			// Implement logic to navigate to the specific auction page based on the parameters
-			// For example:
-			window.location.href = 'viewAuction.jsp?make=' + make + '&model='
-					+ model + '&username=' + username;
-		}
-	</script>
+    <script>
+        function viewAuction(auctionID) {
+            window.location.href = 'auctionItemPage.jsp?auctionID=' + auctionID;
+        }
+    </script>
 </body>
 </html>
