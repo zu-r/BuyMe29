@@ -96,7 +96,7 @@
                         "SELECT v.make, v.model, u.username " +
                         "FROM vehicles v " +
                         "JOIN auctions a ON v.VIN = a.VIN " +
-                        "JOIN users u ON a.username = u.username " +
+                        "JOIN users u ON a.seller = u.username " +
                         "WHERE v.make = ? AND v.model = ? " +
                         "ORDER BY a.close_time DESC"
                     );
