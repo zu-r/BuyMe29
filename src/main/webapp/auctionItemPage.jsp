@@ -57,7 +57,7 @@
             margin-bottom: 20px;
         }
         nav a {
-            text-decoration: none;
+            text-decosration: none;
             color: #fff;
             padding: 10px 20px;
         }
@@ -85,7 +85,6 @@
             <a href="myBids.jsp">My Bids</a>
             <a href="myAuctions.jsp">My Auctions</a>
             <a href="InterestedAuctions.jsp">Interested Items</a>
-            <a href="my_account.jsp">My Account</a>
             <a href="logout.jsp">Log Out</a>
         </nav>
     </header>

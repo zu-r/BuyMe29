@@ -10,13 +10,10 @@
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
-            background-color: #f8f9fa; /* Set a light background color for the body */
-            padding: 20px; /* Add some padding to the body */
+            background-color: #f8f9fa;
+            padding: 20px;
         }
-        .title {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+        /* Styles for containers, boxes, buttons, and navigation */
         .auctions-container {
             display: flex;
             flex-wrap: wrap;
@@ -26,9 +23,9 @@
             border: 1px solid #ccc;
             border-radius: 10px;
             padding: 20px;
-            width: 45%; /* Adjust the width of the auction box */
-            background-color: #ffffff; /* White background for the auction box */
-            margin-bottom: 20px; /* Added margin for spacing */
+            width: 45%;
+            background-color: #ffffff;
+            margin-bottom: 20px;
         }
         .auction-box p {
             margin-bottom: 10px;
@@ -45,7 +42,6 @@
         .auction-box button:hover {
             background-color: #0056b3;
         }
-        
         nav {
             background-color: #333;
             color: #fff;
@@ -81,18 +77,12 @@
 </header>
 
 <nav>
-            <a href="BuyMe.jsp">Home</a>
-            <a href="myBids.jsp">My Bids</a>
-            <a href="myAuctions.jsp">My Auctions</a>
-            <a href="InterestedAuctions.jsp">Interested Items</a>
-            <a href="my_account.jsp">My Account</a>
-            <a href="logout.jsp">Log Out</a>
-        </nav>
-
-
-
-
-
+    <a href="BuyMe.jsp">Home</a>
+    <a href="myBids.jsp">My Bids</a>
+    <a href="myAuctions.jsp">My Auctions</a>
+    <a href="InterestedAuctions.jsp">Interested Items</a>
+    <a href="logout.jsp">Log Out</a>
+</nav>
 
 <div class="filter-container">
     <!-- Filter form with inputs -->
@@ -150,6 +140,12 @@
         <label>Year:</label>
         <input type="text" name="year">
         
+        <label>Price Sort:</label>
+        <select name="sort">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+        </select>
+        
         <input type="submit" value="Apply Filters">
     </form>
 </div>
@@ -160,18 +156,27 @@
         String make = request.getParameter("make");
         String model = request.getParameter("model");
         String year = request.getParameter("year");
+        String sort = request.getParameter("sort");
 
+        // Define default sorting order (ascending)
+        String sortOrder = "ASC";
+        if (sort != null && sort.equalsIgnoreCase("desc")) {
+            sortOrder = "DESC";
+        }
+
+       
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29", "root", "password");
             PreparedStatement stmt = con.prepareStatement(
-                "SELECT v.make, v.model, u.username, a.auctionID " +
+                "SELECT v.make, v.model, u.username, a.auctionID, a.close_time, IFNULL(a.highest_bid, a.initial_price) AS display_price " +
                 "FROM vehicles v " +
                 "JOIN auctions a ON v.VIN = a.VIN " +
                 "JOIN users u ON a.seller = u.username " +
                 "WHERE (v.make = ? OR ? IS NULL OR ? = '') " +
                 "  AND (v.model = ? OR ? IS NULL OR ? = '') " +
-                "  AND (v.year = ? OR ? IS NULL OR ? = '')"
+                "  AND (v.year = ? OR ? IS NULL OR ? = '') " +
+                "ORDER BY display_price " + sortOrder
             );
             stmt.setString(1, make);
             stmt.setString(2, make);
@@ -182,7 +187,7 @@
             stmt.setString(7, year);
             stmt.setString(8, year);
             stmt.setString(9, year);
-            
+
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -190,14 +195,20 @@
                 String resultModel = rs.getString("model");
                 String username = rs.getString("username");
                 String auctionID = rs.getString("auctionID");
-            %>
+                String closeTime = rs.getString("close_time");
+                String displayPrice = rs.getString("display_price"); // Use display_price instead of highest_bid
+
+                // Use displayPrice for rendering in the JSP
+        %>
                 <div class="auction-box">
                     <p>Make: <%= resultMake %></p>
                     <p>Model: <%= resultModel %></p>
                     <p>Posted By: <%= username %></p>
+                    <p>Price: <%= displayPrice %></p>
+                    <p>Ends: <%= closeTime %></p>
                     <button onclick="viewAuction('<%= auctionID %>')">View</button>
                 </div>
-            <% 
+        <%
             }
             rs.close();
             stmt.close();
@@ -206,7 +217,8 @@
             out.println("An error occurred: " + e.getMessage());
             e.printStackTrace();
         }
-    %>
+        %>
+
 </div>
 
 <script>
