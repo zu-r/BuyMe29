@@ -14,7 +14,6 @@
             <a href="my_bids.jsp">My Bids</a>
             <a href="my_auctions.jsp">My Auctions</a>
             <a href="interested_items.jsp">Interested Items</a>
-            <a href="my_account.jsp">My Account</a>
             <a href="logout.jsp">Log Out</a>
         </nav>
     </header>
