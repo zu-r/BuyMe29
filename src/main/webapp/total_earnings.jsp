@@ -1,7 +1,8 @@
+<%@ page import ="java.sql.*" %>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Sales Reports</title>
+    <title>Total Earnings</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -51,16 +52,28 @@
 </head>
 <body>
     <div class="container">
-        <h1>Sales Reports</h1>
+        <h1>Total Earnings</h1>
+        <%
+            // Establish database connection
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29","root", "password");
+            
+            // Execute SQL query to get total earnings
+            PreparedStatement totalEarningsStatement = con.prepareStatement("SELECT SUM(highest_bid) AS total_earnings FROM auctions WHERE close_time < NOW()");
+            ResultSet totalEarningsResult = totalEarningsStatement.executeQuery();
+            if (totalEarningsResult.next()) {
+                float totalEarnings = totalEarningsResult.getFloat("total_earnings");
+        %>
+            <p>Total Earnings: <%= totalEarnings %></p>
+        <%
+            }
+            // Close database connection
+            con.close();
+        %>
+        <br>
         <a href='logout.jsp'>Log out</a>
         <br><br>
-        <button onclick="window.location.href='total_earnings.jsp'">Total Earnings</button>
-        <button onclick="window.location.href='earnings_per_item.jsp'">Earnings Per Item</button>
-        <button onclick="window.location.href='earnings_per_item_type.jsp'">Earnings Per Item Type</button>
-        <button onclick="window.location.href='earnings_per_end_user.jsp'">Earnings Per End User</button>
-        <button onclick="window.location.href='best_selling_items.jsp'">Best Selling Items</button>
-        <button onclick="window.location.href='best_buyers.jsp'">Best Buyers</button>
-        <button class="green" onclick="window.location.href='admin.jsp'">Back to Admin Homepage</button>
+        <button class="green" onclick="window.location.href='sales_report.jsp'">Back to Sales Reports</button>
     </div>
 </body>
 </html>

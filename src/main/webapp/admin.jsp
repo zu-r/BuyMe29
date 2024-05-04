@@ -52,7 +52,7 @@
         <a href='logout.jsp'>Log out</a>
         <br><br>
         <button onclick="window.location.href='manage_customer_reps.jsp'">Manage Customer Representatives</button>
-        <button onclick="window.location.href='sales_report.jsp'">Sales Report</button>
+        <button onclick="window.location.href='sales_report.jsp'">Sales Reports</button>
     </div>
 </body>
 </html>

@@ -6,14 +6,92 @@ Class.forName("com.mysql.jdbc.Driver");
 Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29","root", "password");
 
 if (selectedAucId != null && !selectedAucId.isEmpty()) {
-    // Delete the selected representative from the database
-    PreparedStatement deleteStatement = con.prepareStatement("DELETE FROM auctions WHERE auctionID = ?");
-    deleteStatement.setString(1, selectedAucId);
-    int rowsAffected = deleteStatement.executeUpdate();
-    if (rowsAffected > 0) {
-        out.println("<script>alert('Top bid in Auction with ID: " + selectedAucId + " deleted successfully.');</script>");
+	// Check the number of bids for the selected auction
+    PreparedStatement countBidsStatement = con.prepareStatement("SELECT COUNT(*) AS bid_count FROM bids WHERE auctionID = ?");
+    countBidsStatement.setString(1, selectedAucId);
+    ResultSet countResult = countBidsStatement.executeQuery();
+    countResult.next(); // Move cursor to the first row
+    int bidCount = countResult.getInt("bid_count");
+    
+    
+    if (bidCount == 0) {
+        // No bids found for the auction
+        out.println("<script>alert('No bids found for Auction with ID: " + selectedAucId + ".');</script>");
+    } else if (bidCount == 1) {
+    	// Only one bid found for the auction
+        PreparedStatement updateAuctionsStatement = con.prepareStatement("UPDATE auctions SET highest_bid = NULL, highest_bidder = NULL WHERE auctionID = ?");
+        updateAuctionsStatement.setString(1, selectedAucId);
+        updateAuctionsStatement.executeUpdate();
+
+        // Delete the single bid from the bids table
+        PreparedStatement deleteSingleBidStatement = con.prepareStatement("DELETE FROM bids WHERE auctionID = ?");
+        deleteSingleBidStatement.setString(1, selectedAucId);
+        int rowsDeleted = deleteSingleBidStatement.executeUpdate();
+
+        if (rowsDeleted > 0) {
+            out.println("<script>alert('Single bid in Auction with ID: " + selectedAucId + " deleted successfully.');</script>");
+        } else {
+            out.println("<script>alert('Failed to delete single bid in Auction with ID: " + selectedAucId + ".');</script>");
+        }
     } else {
-        out.println("<script>alert('Failed to delete Top bid in Auction with ID: " + selectedAucId + ".');</script>");
+        try {
+            // Find the current highest bid amount for the selected auction
+            PreparedStatement findHighestBidStatement = con.prepareStatement("SELECT MAX(amount) AS highest_bid FROM bids WHERE auctionID = ?");
+            findHighestBidStatement.setString(1, selectedAucId);
+            ResultSet highestBidResultSet = findHighestBidStatement.executeQuery();
+            
+            // Check if there is a highest bid
+            if (highestBidResultSet.next()) {
+                float highestBidAmount = highestBidResultSet.getFloat("highest_bid");
+                //out.println("Highest Bid Amount: " + highestBidAmount);
+                
+                // Delete the highest bid from the bids table
+                PreparedStatement deleteHighestBidStatement = con.prepareStatement("DELETE FROM bids WHERE auctionID = ? AND amount = ?");
+                deleteHighestBidStatement.setString(1, selectedAucId);
+                deleteHighestBidStatement.setFloat(2, highestBidAmount);
+                deleteHighestBidStatement.executeUpdate();
+                
+                PreparedStatement findNewHighestBidStatement = con.prepareStatement("SELECT MAX(amount) AS new_highest_bid FROM bids WHERE auctionID = ?");
+                findNewHighestBidStatement.setString(1, selectedAucId);
+                ResultSet newHighestBidResultSet = findNewHighestBidStatement.executeQuery();
+                
+                if (newHighestBidResultSet.next()){
+                	float newHighestBidAmount = newHighestBidResultSet.getFloat("new_highest_bid");
+                
+                
+	                // Find the new highest bid amount and bidder
+	                PreparedStatement findNewHighestBidderStatement = con.prepareStatement("SELECT username FROM bids WHERE amount = ? AND auctionID = ?");
+	                findNewHighestBidderStatement.setFloat(1, newHighestBidAmount);
+	                findNewHighestBidderStatement.setString(2, selectedAucId);
+	                ResultSet newHighestBidderResultSet = findNewHighestBidderStatement.executeQuery();
+	                
+	                String newHighestBidder = null;
+	                if (newHighestBidderResultSet.next()) {
+	                    newHighestBidder = newHighestBidderResultSet.getString("username");
+	                }
+	                
+	                //out.println("New Highest Bidder: " + newHighestBidder);
+	                
+	                // Update the auctions table with the new highest bid amount and bidder
+	                PreparedStatement updateAuctionsStatement = con.prepareStatement("UPDATE auctions SET highest_bid = ?, highest_bidder = ? WHERE auctionID = ?");
+	                updateAuctionsStatement.setFloat(1, newHighestBidAmount);
+	                updateAuctionsStatement.setString(2, newHighestBidder);
+	                updateAuctionsStatement.setString(3, selectedAucId);
+	                updateAuctionsStatement.executeUpdate();
+	                
+	                //out.println("New Highest Bid: " + newHighestBidAmount);
+	                
+	                out.println("<script>alert('Top bid in Auction with ID: " + selectedAucId + " deleted successfully.');</script>");
+                }
+            } else {
+                // No highest bid found
+                out.println("<script>alert('No highest bid found for Auction with ID: " + selectedAucId + ".');</script>");
+            }
+        } catch (SQLException e) {
+            out.println("<script>alert('Failed to delete top bid in Auction with ID: " + selectedAucId + ".');</script>");
+            e.printStackTrace();
+        }
+
     }
 }
 
@@ -79,7 +157,7 @@ ResultSet rs1 = st1.executeQuery("SELECT auctionID FROM auctions");
 </head>
 <body>
     <div class="container">
-        <h1>Delete Top Bid from an Auction</h1>
+        <h1>Delete Top Bid From Auction</h1>
         <a href='logout.jsp'>Log out</a>
         <a href='customer_rep.jsp'>Back</a>&nbsp;
         <form action="remove_bid.jsp" method="post">
