@@ -61,62 +61,56 @@
         nav a:hover {
             background-color: #555;
         }
-        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .filter-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .filter-container form {
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
 
-
+<header>
+    <h1>Search Results</h1>
+</header>
 
 <nav id="main-nav">
-        <a href="#">Home</a>
-        <a href="#">My Bids</a>
-        <a href="#">My Auctions</a>
-        <a href="#">Interested Items</a>
-        <a href="#">My Account</a>
-        <a href="#">Log Out</a>
-    </nav>
-    
-    
-    
+    <a href="#">Home</a>
+    <a href="#">My Bids</a>
+    <a href="#">My Auctions</a>
+    <a href="#">Interested Items</a>
+    <a href="#">My Account</a>
+    <a href="#">Log Out</a>
+</nav>
 
-    <div class="auctions-container">
-        <% 
-            // Retrieve parameters from the URL
-            String make = request.getParameter("make");
-            String model = request.getParameter("model");
 
-            if (make != null && model != null) {
+
+
+
+
+<div class="filter-container">
+    <!-- Filter form with inputs -->
+    <form action="searchResults.jsp" method="GET">
+        <label>Make:</label>
+        <select name="make">
+            <option value="">Any</option>
+            <%-- Populate dropdown with available makes --%>
+            <% 
                 try {
                     Class.forName("com.mysql.jdbc.Driver");
                     Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29", "root", "password");
-
-                    // Use PreparedStatement with parameterized query
-                    PreparedStatement stmt = con.prepareStatement(
-                        "SELECT v.make, v.model, u.username, a.auctionID " +
-                        "FROM vehicles v " +
-                        "JOIN auctions a ON v.VIN = a.VIN " +
-                        "JOIN users u ON a.seller = u.username " +
-                        "WHERE v.make = ? AND v.model = ? " +
-                        "ORDER BY a.close_time DESC"
-                    );
-                    stmt.setString(1, make);
-                    stmt.setString(2, model);
-                    ResultSet rs = stmt.executeQuery();
-
+                    Statement stmt = con.createStatement();
+                    ResultSet rs = stmt.executeQuery("SELECT DISTINCT make FROM vehicles");
                     while (rs.next()) {
-                        String resultMake = rs.getString("make");
-                        String resultModel = rs.getString("model");
-                        String username = rs.getString("username");
-                        String auctionID = rs.getString("auctionID");
-                        %>
-                        <div class="auction-box">
-                            <p>Make: <%= make %></p>
-                            <p>Model: <%= model %></p>
-                            <p>Posted By: <%= username %></p>
-                            <button onclick="viewAuction('<%= auctionID %>')">View</button>
-                        </div>
-        <% 
+            %>
+                <option value="<%= rs.getString("make") %>"><%= rs.getString("make") %></option>
+            <% 
                     }
                     rs.close();
                     stmt.close();
@@ -125,16 +119,102 @@
                     out.println("An error occurred: " + e.getMessage());
                     e.printStackTrace();
                 }
-            } else {
-                out.println("Invalid parameters. Please provide make and model.");
-            }
-        %>
-    </div>
+            %>
+        </select>
+        
+        <label>Model:</label>
+        <select name="model">
+            <option value="">Any</option>
+            <%-- Populate dropdown with available models --%>
+            <% 
+                try {
+                    Class.forName("com.mysql.jdbc.Driver");
+                    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29", "root", "password");
+                    Statement stmt = con.createStatement();
+                    ResultSet rs = stmt.executeQuery("SELECT DISTINCT model FROM vehicles");
+                    while (rs.next()) {
+            %>
+                <option value="<%= rs.getString("model") %>"><%= rs.getString("model") %></option>
+            <% 
+                    }
+                    rs.close();
+                    stmt.close();
+                    con.close();
+                } catch (Exception e) {
+                    out.println("An error occurred: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            %>
+        </select>
+        
+        <label>Year:</label>
+        <input type="text" name="year">
+        
+        <input type="submit" value="Apply Filters">
+    </form>
+</div>
 
-    <script>
-	    function viewAuction(auctionID) {
-	        window.location.href = 'auctionItemPage.jsp?auctionID=' + auctionID;
-	    }
-    </script>
+<div class="auctions-container">
+    <% 
+        // Retrieve parameters from the URL
+        String make = request.getParameter("make");
+        String model = request.getParameter("model");
+        String year = request.getParameter("year");
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29", "root", "password");
+            PreparedStatement stmt = con.prepareStatement(
+                "SELECT v.make, v.model, u.username, a.auctionID " +
+                "FROM vehicles v " +
+                "JOIN auctions a ON v.VIN = a.VIN " +
+                "JOIN users u ON a.seller = u.username " +
+                "WHERE (v.make = ? OR ? IS NULL OR ? = '') " +
+                "  AND (v.model = ? OR ? IS NULL OR ? = '') " +
+                "  AND (v.year = ? OR ? IS NULL OR ? = '')"
+            );
+            stmt.setString(1, make);
+            stmt.setString(2, make);
+            stmt.setString(3, make);
+            stmt.setString(4, model);
+            stmt.setString(5, model);
+            stmt.setString(6, model);
+            stmt.setString(7, year);
+            stmt.setString(8, year);
+            stmt.setString(9, year);
+            
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String resultMake = rs.getString("make");
+                String resultModel = rs.getString("model");
+                String username = rs.getString("username");
+                String auctionID = rs.getString("auctionID");
+            %>
+                <div class="auction-box">
+                    <p>Make: <%= resultMake %></p>
+                    <p>Model: <%= resultModel %></p>
+                    <p>Posted By: <%= username %></p>
+                    <button onclick="viewAuction('<%= auctionID %>')">View</button>
+                </div>
+            <% 
+            }
+            rs.close();
+            stmt.close();
+            con.close();
+        } catch (Exception e) {
+            out.println("An error occurred: " + e.getMessage());
+            e.printStackTrace();
+        }
+    %>
+</div>
+
+<script>
+    // JavaScript function to redirect to auction details page
+    function viewAuction(auctionID) {
+        window.location.href = 'auctionItemPage.jsp?auctionID=' + auctionID;
+    }
+</script>
+
 </body>
 </html>
