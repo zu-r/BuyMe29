@@ -16,7 +16,7 @@
             <a href="BuyMe.jsp">Home</a>
             <a href="myBids.jsp">My Bids</a>
             <a href="myAuctions.jsp">My Auctions</a>
-            <a href="interested_items.jsp">Interested Items</a>
+            <a href="InterestedAuctions.jsp">Interested Items</a>
             <a href="my_account.jsp">My Account</a>
             <a href="logout.jsp">Log Out</a>
         </nav>
@@ -29,10 +29,10 @@
 		Connection con = db.getConnection();
         
         String auctionID = request.getParameter("auctionID");
-      	//String username = (String) session.getAttribute("user");
+      	String username = (String) session.getAttribute("user");
         //String auctionID = "1";
        	//String username = "admin";
-        String username = "user2";
+        //String username = "bro";
         
         Statement findUser = con.createStatement();
         String userDetailsQuery = "select * from users where username = '" + username + "'";
@@ -53,8 +53,8 @@
 		
 		// Vehicle details
 		String vin = vehicleAuctionResult.getString("VIN");
-/* 		String year = vehicleAuctionResult.getString("year");
- */		String make = vehicleAuctionResult.getString("make");
+ 		String year = vehicleAuctionResult.getString("year");
+ 		String make = vehicleAuctionResult.getString("make");
 		String model = vehicleAuctionResult.getString("model");
 		String mileage = vehicleAuctionResult.getString("mileage");
 		String color = vehicleAuctionResult.getString("color");
@@ -80,7 +80,7 @@
 		vehicleAuctionResult.close();
 		
         %>
-        <h2> <%= make %> <%= model %></h2>
+        <h2> <%= year %> <%= make %> <%= model %></h2>
         <h3>Current Price: $<%= price > highestBid ? price: highestBid%></h3>
         <h4>Closing Date/Time: <%= endTime %></h4>
         <%-- Display detailed vehicle information --%>
@@ -115,7 +115,7 @@
 		            ResultSet favoritedResults = checkIfFavoritedStmt.executeQuery(checkIfFavoritedQuery);
 		            if (!favoritedResults.next()) {
 		                Statement addToFavoritesStmt = con.createStatement();
-		                String addToFavoritesQuery = "insert into interested_items values ('" + username + "', '" + vin + "')";
+		                String addToFavoritesQuery = "insert into interested_items values ('" + username + "', '" + vin + "', '" + make + "', '" + model + "')";
 		                addToFavoritesStmt.executeUpdate(addToFavoritesQuery);
 		                out.println("Added to your interested items.");
 		            } else {
@@ -180,7 +180,7 @@
 			       	update.close();
 			       	
 			       	// refresh by redirecting to this page
-			   		response.sendRedirect("auctionItemPage.jsp");
+			   		response.sendRedirect("auctionItemPage.jsp?auctionID=" + auctionID);
 			   	} else {
 					out.println("Bid amount is too low.");
 			   	}

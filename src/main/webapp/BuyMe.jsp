@@ -88,6 +88,7 @@
         <p>Your Online Marketplace</p>
     </header>
 
+
    <nav id="main-nav">
 		<a href="BuyMe.jsp">Home</a> 
 		<a href="myBids.jsp">My Bids</a> 
