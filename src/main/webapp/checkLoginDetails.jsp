@@ -2,6 +2,7 @@
 <%
 String userid = request.getParameter("username");
 String pwd = request.getParameter("password");
+session.setAttribute("username", userid);
 
 Class.forName("com.mysql.jdbc.Driver");
 Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29","root", "password");
