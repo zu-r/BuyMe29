@@ -28,9 +28,9 @@
         ApplicationDB db = new ApplicationDB();	
 		Connection con = db.getConnection();
         
-        //String auctionID = (String) session.getAttribute("auctionID");
+        String auctionID = request.getParameter("auctionID");
       	//String username = (String) session.getAttribute("user");
-        String auctionID = "1";
+        //String auctionID = "1";
        	//String username = "admin";
         String username = "user2";
         

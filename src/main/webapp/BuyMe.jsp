@@ -158,10 +158,10 @@
                 Class.forName("com.mysql.jdbc.Driver");
                 Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29", "root", "password");
                 PreparedStatement stmt = con.prepareStatement(
-                    "SELECT v.make, v.model, u.username " +
+                    "SELECT v.make, v.model, u.username, a.auctionID " +
                     "FROM vehicles v " +
                     "JOIN auctions a ON v.VIN = a.VIN " +
-                    "JOIN users u ON a.username = u.username " +
+                    "JOIN users u ON a.seller = u.username " +
                     "WHERE v.type = 'car' " +
                     "ORDER BY a.close_time DESC " +
                     "LIMIT 6"
@@ -172,12 +172,13 @@
                     String make = rs.getString("make");
                     String model = rs.getString("model");
                     String username = rs.getString("username");
+                    String auctionID = rs.getString("auctionID");
         %>
                     <div class="auction-box">
                         <p>Make: <%= make %></p>
                         <p>Model: <%= model %></p>
                         <p>Posted By: <%= username %></p>
-                        <button onclick="viewAuction('<%= make %>', '<%= model %>', '<%= username %>')">View</button>
+                        <button onclick="viewAuction('<%= auctionID %>')">View</button>
                     </div>
         <%
                 }
@@ -191,10 +192,8 @@
     </div>
 
     <script>
-        function viewAuction(make, model, username) {
-            // Implement logic to navigate to the specific auction page based on the parameters
-            // For example:
-            window.location.href = 'viewAuction.jsp?make=' + make + '&model=' + model + '&username=' + username;
+        function viewAuction(auctionID) {
+            window.location.href = 'auctionItemPage.jsp?auctionID=' + auctionID;
         }
     </script>
 </body>
