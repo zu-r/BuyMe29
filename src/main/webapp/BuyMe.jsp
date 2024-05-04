@@ -91,7 +91,7 @@
     <nav id="main-nav">
         <a href="#">Home</a>
         <a href="#">My Bids</a>
-        <a href="#">My Auctions</a>
+        <a href="myAuctions.jsp">My Auctions</a>
         <a href="#">Interested Items</a>
         <a href="#">My Account</a>
         <a href="#">Log Out</a>
