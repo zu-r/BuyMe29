@@ -55,7 +55,7 @@
         <button onclick="window.location.href='delete_user.jsp'">Delete User</button>
         <button onclick="window.location.href='remove_bid.jsp'">Remove Bid</button>
         <button onclick="window.location.href='remove_auction.jsp'">Remove Auction</button>
-        <button onclick="window.location.href='reply_customer.jsp'">Reply to Customer Questions</button>
+        <button onclick="window.location.href='reply_customer.jsp'">View Customer Questions</button>
     </div>
 </body>
 </html>
