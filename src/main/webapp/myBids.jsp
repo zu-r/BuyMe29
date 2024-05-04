@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Best Buyers</title>
+    <title>My Auctions</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -58,17 +58,18 @@
 </head>
 <body>
 <div class="container">
-    <h1>My Bids</h1>
+    <h1>My Auctions</h1>
 
-    <h2>Completed Auctions</h2>
+    <h2>Past Bids</h2>
     <table>
         <thead>
         <tr>
             <th>Make</th>
             <th>Model</th>
             <th>Year</th>
+            <th>My Bid</th>
+            <th>Bid Time</th>
             <th>Highest Bid</th>
-            <th>Close Time</th>
         </tr>
         </thead>
         <tbody>
@@ -77,21 +78,23 @@
                 	String userID = (String) session.getAttribute("user");
                     Class.forName("com.mysql.jdbc.Driver");
                     Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29","root", "password");
-                    PreparedStatement pastAuctions = con.prepareStatement("SELECT v.make, v.model, v.year, a.highest_bid, a.close_time FROM auctions a, vehicles v WHERE a.VIN = v.VIN AND a.close_time < NOW() AND a.seller = '"+ userID+"'");
-                    ResultSet pastResults = pastAuctions.executeQuery();
+                    PreparedStatement pastBids = con.prepareStatement("SELECT v.make, v.model, v.year, b.amount, b.time, a.highest_bid FROM bids b, vehicles v, auctions a WHERE b.auctionID = a.auctionID AND a.VIN = v.VIN AND a.close_time < NOW() AND b.username = '"+ userID+"'");
+                    ResultSet pastResults = pastBids.executeQuery();
                     while (pastResults.next()) {
                         String make = pastResults.getString("make");
                         String model = pastResults.getString("model");
                         int year = pastResults.getInt("year");
+                        float myBid = pastResults.getFloat("amount");
+                        Timestamp bidTime = pastResults.getTimestamp("time");
                         float highestBid = pastResults.getFloat("highest_bid");
-                        Timestamp closeTime = pastResults.getTimestamp("close_time");
             %>
             <tr>
                 <td><%= make %></td>
                 <td><%= model %></td>
                 <td><%= year %></td>
+                <td><%= myBid %></td>
+                <td><%= bidTime %></td>
                 <td><%= highestBid %></td>
-                <td><%= closeTime %></td>
             </tr>
             <%
                     }
@@ -102,37 +105,40 @@
         </tbody>
     </table>
 
-    <h2>Ongoing Auctions</h2>
+    <h2>Ongoing Bids</h2>
     <table>
         <thead>
         <tr>
             <th>Make</th>
             <th>Model</th>
             <th>Year</th>
+            <th>My Bid</th>
+            <th>Bid Time</th>
             <th>Highest Bid</th>
-            <th>Close Time</th>
         </tr>
         </thead>
         <tbody>
             <%
                 try {
                 	String userID = (String) session.getAttribute("user");
-                    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29", "root", "password");
-                    PreparedStatement ongoingAuctions = con.prepareStatement("SELECT v.make, v.model, v.year, a.highest_bid, a.close_time FROM auctions a, vehicles v WHERE a.VIN = v.VIN AND a.close_time > NOW() AND a.seller = '"+ userID+"'");
-                    ResultSet ongoingResults = ongoingAuctions.executeQuery();
+                	Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29","root", "password");
+                    PreparedStatement ongoingBids = con.prepareStatement("SELECT v.make, v.model, v.year, b.amount, b.time, a.highest_bid FROM bids b, vehicles v, auctions a WHERE b.auctionID = a.auctionID AND a.VIN = v.VIN AND a.close_time > NOW() AND b.username = '"+ userID+"'");
+                    ResultSet ongoingResults = ongoingBids.executeQuery();
                     while (ongoingResults.next()) {
                         String make = ongoingResults.getString("make");
                         String model = ongoingResults.getString("model");
                         int year = ongoingResults.getInt("year");
+                        float myBid = ongoingResults.getFloat("amount");
+                        Timestamp bidTime = ongoingResults.getTimestamp("time");
                         float highestBid = ongoingResults.getFloat("highest_bid");
-                        Timestamp closeTime = ongoingResults.getTimestamp("close_time");
             %>
             <tr>
                 <td><%= make %></td>
                 <td><%= model %></td>
                 <td><%= year %></td>
+                <td><%= myBid %></td>
+                <td><%= bidTime %></td>
                 <td><%= highestBid %></td>
-                <td><%= closeTime %></td>
             </tr>
             <%
                     }
