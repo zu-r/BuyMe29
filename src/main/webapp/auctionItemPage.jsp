@@ -28,11 +28,11 @@
         ApplicationDB db = new ApplicationDB();	
 		Connection con = db.getConnection();
         
-        //String auctionID = request.getParameter("auctionID");
-      	//String username = (String) session.getAttribute("user");
-        String auctionID = "1";
+        String auctionID = request.getParameter("auctionID");
+      	String username = (String) session.getAttribute("user");
+        //String auctionID = "1";
        	//String username = "admin";
-        String username = "bro";
+        //String username = "bro";
         
         Statement findUser = con.createStatement();
         String userDetailsQuery = "select * from users where username = '" + username + "'";
@@ -53,8 +53,8 @@
 		
 		// Vehicle details
 		String vin = vehicleAuctionResult.getString("VIN");
-/* 		String year = vehicleAuctionResult.getString("year");
- */		String make = vehicleAuctionResult.getString("make");
+ 		String year = vehicleAuctionResult.getString("year");
+ 		String make = vehicleAuctionResult.getString("make");
 		String model = vehicleAuctionResult.getString("model");
 		String mileage = vehicleAuctionResult.getString("mileage");
 		String color = vehicleAuctionResult.getString("color");
@@ -80,7 +80,7 @@
 		vehicleAuctionResult.close();
 		
         %>
-        <h2> <%= make %> <%= model %></h2>
+        <h2> <%= year %> <%= make %> <%= model %></h2>
         <h3>Current Price: $<%= price > highestBid ? price: highestBid%></h3>
         <h4>Closing Date/Time: <%= endTime %></h4>
         <%-- Display detailed vehicle information --%>
@@ -180,7 +180,7 @@
 			       	update.close();
 			       	
 			       	// refresh by redirecting to this page
-			   		response.sendRedirect("auctionItemPage.jsp");
+			   		response.sendRedirect("auctionItemPage.jsp?auctionID=" + auctionID);
 			   	} else {
 					out.println("Bid amount is too low.");
 			   	}
