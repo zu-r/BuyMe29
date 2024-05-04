@@ -258,6 +258,19 @@
         %>
 	    </p>
     	<%-- Auto bidding --%>
+    	<form action="" method="post">
+        	<input type="number" name="autoBidAmount" step="0.01" placeholder="Enter auto bid maximum" required>
+        	<input type="hidden" name="action" value="placeAutoBid">
+        	<button type="submit">Set Auto Bid</button>
+    	</form>
+	    <p>
+		<% 
+	    
+		if (request.getMethod().equals("POST") && "placeAutoBid".equals(request.getParameter("action"))) {
+		
+		}
+		
+		%>
     </section>
     
     <section id="bids-section">
