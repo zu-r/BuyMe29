@@ -53,8 +53,8 @@
 		
 		// Vehicle details
 		String vin = vehicleAuctionResult.getString("VIN");
-		String year = vehicleAuctionResult.getString("year");
-		String make = vehicleAuctionResult.getString("make");
+/* 		String year = vehicleAuctionResult.getString("year");
+ */		String make = vehicleAuctionResult.getString("make");
 		String model = vehicleAuctionResult.getString("model");
 		String mileage = vehicleAuctionResult.getString("mileage");
 		String color = vehicleAuctionResult.getString("color");
@@ -80,7 +80,7 @@
 		vehicleAuctionResult.close();
 		
         %>
-        <h2><%= year %> <%= make %> <%= model %></h2>
+        <h2> <%= make %> <%= model %></h2>
         <h3>Current Price: $<%= price > highestBid ? price: highestBid%></h3>
         <h4>Closing Date/Time: <%= endTime %></h4>
         <%-- Display detailed vehicle information --%>
@@ -167,7 +167,7 @@
 			       	// send alert to highest bidder if not null: insert into alert_inbox new value (highestBidder, 'you have been outbid on the [year] [model] [make]')
 			       	if(highestBidder != null){
 			       		Statement bidAlert = con.createStatement();
-				       	String alertMessage = "You have been outbid on the " + year + " " + model + " " + make + "! (VIN: " + vin + ")";
+				       	String alertMessage = "You have been outbid on the " + " " + model + " " + make + "! (VIN: " + vin + ")";
 				       	String addBidAlert = "insert into alert_inbox values ('" + highestBidder + "', '" + formattedDate + "', '" + alertMessage + "')";
 				       	bidAlert.executeUpdate(addBidAlert);
 				       	bidAlert.close();
