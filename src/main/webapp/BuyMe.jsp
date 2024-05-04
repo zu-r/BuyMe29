@@ -92,7 +92,7 @@
         <a href="#">Home</a>
         <a href="myBids.jsp">My Bids</a>
         <a href="myAuctions.jsp">My Auctions</a>
-        <a href="#">Interested Items</a>
+        <a href="InterestedAuctions.jsp">Interested Items</a>
         <a href="#">My Account</a>
         <a href="#">Log Out</a>
     </nav>

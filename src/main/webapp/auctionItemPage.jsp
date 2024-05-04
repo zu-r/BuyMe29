@@ -28,11 +28,11 @@
         ApplicationDB db = new ApplicationDB();	
 		Connection con = db.getConnection();
         
-        String auctionID = request.getParameter("auctionID");
+        //String auctionID = request.getParameter("auctionID");
       	//String username = (String) session.getAttribute("user");
-        //String auctionID = "1";
+        String auctionID = "1";
        	//String username = "admin";
-        String username = "user2";
+        String username = "bro";
         
         Statement findUser = con.createStatement();
         String userDetailsQuery = "select * from users where username = '" + username + "'";
@@ -115,7 +115,7 @@
 		            ResultSet favoritedResults = checkIfFavoritedStmt.executeQuery(checkIfFavoritedQuery);
 		            if (!favoritedResults.next()) {
 		                Statement addToFavoritesStmt = con.createStatement();
-		                String addToFavoritesQuery = "insert into interested_items values ('" + username + "', '" + vin + "')";
+		                String addToFavoritesQuery = "insert into interested_items values ('" + username + "', '" + vin + "', '" + make + "', '" + model + "')";
 		                addToFavoritesStmt.executeUpdate(addToFavoritesQuery);
 		                out.println("Added to your interested items.");
 		            } else {
