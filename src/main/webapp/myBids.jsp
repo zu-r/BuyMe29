@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My Auctions</title>
+    <title>My Bids</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -58,7 +58,7 @@
 </head>
 <body>
 <div class="container">
-    <h1>My Auctions</h1>
+    <h1>My Bids</h1>
 
     <h2>Past Bids</h2>
     <table>

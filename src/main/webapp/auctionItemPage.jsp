@@ -14,8 +14,8 @@
         <h1>BuyMe</h1>
         <nav>
             <a href="BuyMe.jsp">Home</a>
-            <a href="my_bids.jsp">My Bids</a>
-            <a href="my_auctions.jsp">My Auctions</a>
+            <a href="myBids.jsp">My Bids</a>
+            <a href="myAuctions.jsp">My Auctions</a>
             <a href="interested_items.jsp">Interested Items</a>
             <a href="my_account.jsp">My Account</a>
             <a href="logout.jsp">Log Out</a>
