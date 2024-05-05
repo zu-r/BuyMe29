@@ -94,8 +94,7 @@ button.green:hover {
 		<tbody>
 			<%
 	
-	     	//String userID = (String) session.getAttribute("user");
-	 		String userID = "bro";
+	     	String userID = (String) session.getAttribute("user");
 	 		Class.forName("com.mysql.jdbc.Driver");
 	        Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29", "root", "password");
 	        String query = "Select v.year, v.make, v.model, v.VIN, a.auctionID, a.close_time From auctions a join vehicles v on a.VIN = v.VIN Where v.make in (select make from interested_items where username = '" + userID + "') and v.model in (select model from interested_items where username = '" + userID + "')";
