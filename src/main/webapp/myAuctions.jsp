@@ -1,4 +1,22 @@
 <%@ page import="java.sql.*" %>
+<%
+String selectedUserId = request.getParameter("userSelect");
+
+// Establish database connection
+Class.forName("com.mysql.jdbc.Driver");
+Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29", "root", "password");
+
+// Fetch auctions based on the selected user's ID or the current user's ID if no selection is made
+String userID = (selectedUserId != null && !selectedUserId.isEmpty()) ? selectedUserId : (String) session.getAttribute("user");
+PreparedStatement pastAuctions = con.prepareStatement("SELECT v.make, v.model, v.year, a.highest_bid, a.close_time FROM auctions a, vehicles v WHERE a.VIN = v.VIN AND a.close_time < NOW() AND a.seller = ?");
+pastAuctions.setString(1, userID);
+ResultSet pastResults = pastAuctions.executeQuery();
+
+// Fetch ongoing auctions based on the selected user's ID or the current user's ID if no selection is made
+PreparedStatement ongoingAuctions = con.prepareStatement("SELECT v.make, v.model, v.year, a.highest_bid, a.close_time FROM auctions a, vehicles v WHERE a.VIN = v.VIN AND a.close_time > NOW() AND a.seller = ?");
+ongoingAuctions.setString(1, userID);
+ResultSet ongoingResults = ongoingAuctions.executeQuery();
+%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -67,12 +85,34 @@
 <div class="container">
     <h1>My Auctions</h1>
     
-        <button class="add-button green" onclick="window.location.href='PostAuction.jsp'">+ Add New Auction</button>
-    
-
+    <!-- Add new auction buttons -->
     <button class="add-button green" onclick="window.location.href='PostAuction.jsp'">+ Add New Auction</button>
+    
+    <!-- Dropdown for selecting users -->
+    <form action="myAuctions.jsp" method="get">
+        <select name="userSelect">
+            <option value="<%= (String) session.getAttribute("user") %>">My Auctions</option>
+            <% 
+                try {
+                    // Fetch all users
+                    PreparedStatement getUsers = con.prepareStatement("SELECT username FROM users WHERE account_type = 'user' AND username <> ?");
+                    getUsers.setString(1, (String) session.getAttribute("user"));
+                    ResultSet users = getUsers.executeQuery();
+                    while(users.next()) {
+                        userID = users.getString("username");
+            %>
+            <option value="<%= userID %>" <%= (selectedUserId != null && selectedUserId.equals(userID)) ? "selected" : "" %>><%= userID %></option>
+            <%
+                    }
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            %>
+        </select>
+        <button type="submit">Search</button>
+    </form>
 
-
+    <!-- Completed Auctions Table -->
     <h2>Completed Auctions</h2>
     <table>
         <thead>
@@ -85,36 +125,19 @@
         </tr>
         </thead>
         <tbody>
-            <%
-                try {
-                	String userID = (String) session.getAttribute("user");
-                    Class.forName("com.mysql.jdbc.Driver");
-                    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29","root", "password");
-                    PreparedStatement pastAuctions = con.prepareStatement("SELECT v.make, v.model, v.year, a.highest_bid, a.close_time FROM auctions a, vehicles v WHERE a.VIN = v.VIN AND a.close_time < NOW() AND a.seller = '"+ userID+"'");
-                    ResultSet pastResults = pastAuctions.executeQuery();
-                    while (pastResults.next()) {
-                        String make = pastResults.getString("make");
-                        String model = pastResults.getString("model");
-                        int year = pastResults.getInt("year");
-                        float highestBid = pastResults.getFloat("highest_bid");
-                        Timestamp closeTime = pastResults.getTimestamp("close_time");
-            %>
-            <tr>
-                <td><%= make %></td>
-                <td><%= model %></td>
-                <td><%= year %></td>
-                <td><%= highestBid %></td>
-                <td><%= closeTime %></td>
-            </tr>
-            <%
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            %>
+            <% while (pastResults.next()) { %>
+                <tr>
+                    <td><%= pastResults.getString("make") %></td>
+                    <td><%= pastResults.getString("model") %></td>
+                    <td><%= pastResults.getInt("year") %></td>
+                    <td><%= pastResults.getFloat("highest_bid") %></td>
+                    <td><%= pastResults.getTimestamp("close_time") %></td>
+                </tr>
+            <% } %>
         </tbody>
     </table>
 
+    <!-- Ongoing Auctions Table -->
     <h2>Ongoing Auctions</h2>
     <table>
         <thead>
@@ -127,35 +150,19 @@
         </tr>
         </thead>
         <tbody>
-            <%
-                try {
-                	String userID = (String) session.getAttribute("user");
-                    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29", "root", "password");
-                    PreparedStatement ongoingAuctions = con.prepareStatement("SELECT v.make, v.model, v.year, a.highest_bid, a.close_time FROM auctions a, vehicles v WHERE a.VIN = v.VIN AND a.close_time > NOW() AND a.seller = '"+ userID+"'");
-                    ResultSet ongoingResults = ongoingAuctions.executeQuery();
-                    while (ongoingResults.next()) {
-                        String make = ongoingResults.getString("make");
-                        String model = ongoingResults.getString("model");
-                        int year = ongoingResults.getInt("year");
-                        float highestBid = ongoingResults.getFloat("highest_bid");
-                        Timestamp closeTime = ongoingResults.getTimestamp("close_time");
-            %>
-            <tr>
-                <td><%= make %></td>
-                <td><%= model %></td>
-                <td><%= year %></td>
-                <td><%= highestBid %></td>
-                <td><%= closeTime %></td>
-            </tr>
-            <%
-                    }
-                    con.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            %>
+            <% while (ongoingResults.next()) { %>
+                <tr>
+                    <td><%= ongoingResults.getString("make") %></td>
+                    <td><%= ongoingResults.getString("model") %></td>
+                    <td><%= ongoingResults.getInt("year") %></td>
+                    <td><%= ongoingResults.getFloat("highest_bid") %></td>
+                    <td><%= ongoingResults.getTimestamp("close_time") %></td>
+                </tr>
+            <% } %>
         </tbody>
     </table>
+
+    <!-- Logout and Back buttons -->
     <br>
     <a href='logout.jsp'>Log out</a>
     <br><br>
