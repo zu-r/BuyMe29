@@ -142,6 +142,7 @@
                 <td><%= highestBid %></td>
                 <td><%= closeTime %></td>
             </tr>
+
             <%
                     }
                     con.close();
