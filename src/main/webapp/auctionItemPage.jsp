@@ -318,49 +318,39 @@
 		        float bidAmount = Float.parseFloat(request.getParameter("bidAmount"));
 		        if (bidAmount >= highestBid + increment) {
 		            out.println("Bid placed successfully.");
-		            highestBid = bidAmount;
-		            highestBidder = username;
-		            
-		            // insert new value into bids table with username, datetime, and new amount
-		           
-		            String formattedDate = currentDateTime.format(formatter);
-		            
-		         // Prepare the SQL query with placeholders
-		            String insertQuery = "INSERT INTO bids (username, auctionID, time, amount) VALUES (?, ?, ?, ?)";
-		
-		            PreparedStatement preparedStatement = con.prepareStatement(insertQuery);
-		                // Set the values for the placeholders
-		                preparedStatement.setString(1, username);
-		                preparedStatement.setInt(2, auctionID);
-		                preparedStatement.setString(3, formattedDate);
-		                preparedStatement.setFloat(4, bidAmount);
-		
-		                // Execute the update
-		                preparedStatement.executeUpdate();
-		                
-		                // Optionally, commit the transaction if you're using transactions
-		/*                 con.commit();
-		 */                
-		                // Handle success
-		                out.println("New bid inserted successfully!");
-		          
-		            
+		         	
 		            // send alert to highest bidder if not null: insert into alert_inbox new value (highestBidder, 'you have been outbid on the [year] [model] [make]')
+		            String formattedDate = currentDateTime.format(formatter);
 		            if (highestBidder != null && !highestBidder.equals(username)) {
 		                Statement bidAlert = con.createStatement();
-		                String alertMessage = "You have been outbid on the " + year + " "+ make + " " + model + "! (VIN: " + vin + ")";
+		                String alertMessage = "You have been outbid on the " + year + " "+ make + " " + model + "! (VIN: " + vin + ") (New Price: " + highestBid + ")";
 		                String addBidAlert = "insert into alert_inbox values ('" + highestBidder + "', '" + formattedDate + "', '" + alertMessage + "')";
 		                bidAlert.executeUpdate(addBidAlert);
 		                bidAlert.close();
 		            }
 		            
+		            highestBid = bidAmount;
+		            highestBidder = username;
+		            
+		         	// Prepare the SQL query with placeholders
+		            String insertQuery = "INSERT INTO bids (username, auctionID, time, amount) VALUES (?, ?, ?, ?)";
+		
+		            PreparedStatement preparedStatement = con.prepareStatement(insertQuery);
+	                // Set the values for the placeholders
+	                preparedStatement.setString(1, username);
+	                preparedStatement.setInt(2, auctionID);
+	                preparedStatement.setString(3, formattedDate);
+	                preparedStatement.setFloat(4, bidAmount);
+	
+	                // Execute the update
+	                preparedStatement.executeUpdate();
+	                out.println("New bid inserted successfully!");
+		          
 		            // update auction row: highest_bidder -> username, highest_bid -> new bid
 		            Statement update = con.createStatement();
 		            String updateAuction = "update auctions set `highest_bid` = " + bidAmount + ", `highest_bidder` = '" + username + "' where auctionID = " + auctionID;
 		            update.executeUpdate(updateAuction);
 		            update.close();
-		            
-		            
 		            
 		            Statement findAutoBids = con.createStatement();
 	                String otherAutoBidsQuery = "select * from auto_bids where auctionID = " + auctionID;
@@ -408,7 +398,7 @@
 		        		            // send alert to highest bidder if not null: insert into alert_inbox new value (highestBidder, 'you have been outbid on the [year] [model] [make]')
 		        		            if (highestBidder != null) {
 		        		                Statement bidAlert = con.createStatement();
-		        		                String alertMessage = "You have been outbid on the " + year + " " + make + " " + model + "! (New Price: " + highestBid + ")";
+		        		                String alertMessage = "You have been outbid on the " + year + " " + make + " " + model + "! (VIN: " + vin + ") (New Price: " + highestBid + ")";
 		        		                String addBidAlert = "insert into alert_inbox values ('" + highestBidder + "', '" + formattedDate + "', '" + alertMessage + "')";
 		        		                bidAlert.executeUpdate(addBidAlert);
 		        		                bidAlert.close();
@@ -523,7 +513,7 @@
 		        		            // send alert to highest bidder if not null: insert into alert_inbox new value (highestBidder, 'you have been outbid on the [year] [model] [make]')
 		        		            if (highestBidder != null) {
 		        		                Statement bidAlert = con.createStatement();
-		        		                String alertMessage = "You have been outbid on the " + year + " " + make + " " + model + "! (New Price: " + highestBid + ")";
+		        		                String alertMessage = "You have been outbid on the " + year + " " + make + " " + model + "! (VIN: " + vin + ") (New Price: " + highestBid + ")";
 		        		                String addBidAlert = "insert into alert_inbox values ('" + highestBidder + "', '" + formattedDate + "', '" + alertMessage + "')";
 		        		                bidAlert.executeUpdate(addBidAlert);
 		        		                bidAlert.close();
