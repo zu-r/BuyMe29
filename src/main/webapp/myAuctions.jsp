@@ -54,11 +54,20 @@
         button.green:hover {
             background-color: #218838;
         }
+            .add-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: auto;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>My Auctions</h1>
+
+    <button class="add-button green" onclick="window.location.href='PostAuction.jsp'">+ Add New Auction</button>
+
 
     <h2>Completed Auctions</h2>
     <table>
