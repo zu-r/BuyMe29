@@ -18,6 +18,19 @@
     th {
         background-color: #f2f2f2;
     }
+    .back-button {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 20px;
+    }
+    .back-button:hover {
+        background-color: #0056b3;
+    }
 </style>
 </head>
 <body>
@@ -62,6 +75,13 @@
     </tbody>
 </table>
 
+<button class="back-button" onclick="goBack()">Back</button>
+
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
+
 </body>
 </html>
-
