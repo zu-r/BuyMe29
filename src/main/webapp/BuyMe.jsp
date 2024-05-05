@@ -112,11 +112,6 @@
     </script>
 </head>
 <body>
-    <header>
-        <h1>Welcome to BuyMe</h1>
-        <p>Your Online Marketplace</p>
-    </header>
-
     <%-- Include Alerts Here --%>
     <%
         HttpSession session2 = request.getSession();

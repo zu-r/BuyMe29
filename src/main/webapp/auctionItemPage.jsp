@@ -113,16 +113,6 @@
        	//String username = "admin";
         //String username = "bro";
         
-        Statement findUser = con.createStatement();
-        String userDetailsQuery = "select * from users where username = '" + username + "'";
-        ResultSet user = findUser.executeQuery(userDetailsQuery);
-        boolean canBid = true;
-        if(user.next()){
-        	if(user.getString("account_type").equals("admin") || user.getString("account_type").equals("cust_rep")){
-        		canBid = false;
-        	}
-        }
-        
 		Statement selectDetailsStmt = con.createStatement();
 		String vehicleAndAuctionDetails = "select * from vehicles join auctions on vehicles.VIN = auctions.VIN where vehicles.VIN = ( select VIN from auctions where auctionID = " + auctionID + ")";
 		ResultSet vehicleAuctionResult = selectDetailsStmt.executeQuery(vehicleAndAuctionDetails);
@@ -152,11 +142,23 @@
 		float price = vehicleAuctionResult.getFloat("initial_price");
 		float reserve = vehicleAuctionResult.getFloat("secret_minimum_price");
 		float increment = vehicleAuctionResult.getFloat("increment");
-		float highestBid = vehicleAuctionResult.getFloat("highest_bid");
+		float initialPrice = vehicleAuctionResult.getFloat("initial_price");
+		float highestBid = vehicleAuctionResult.getFloat("highest_bid") > initialPrice ? vehicleAuctionResult.getFloat("highest_bid") : initialPrice;
 		String highestBidder = vehicleAuctionResult.getString("highest_bidder");
+		String seller = vehicleAuctionResult.getString("seller");
 		
 		selectDetailsStmt.close();
 		vehicleAuctionResult.close();
+		
+		Statement findUser = con.createStatement();
+        String userDetailsQuery = "select * from users where username = '" + username + "'";
+        ResultSet user = findUser.executeQuery(userDetailsQuery);
+        boolean canBid = true;
+        if(user.next()){
+        	if(user.getString("account_type").equals("admin") || user.getString("account_type").equals("cust_rep") || username.equals(seller)){
+        		canBid = false;
+        	}
+        }
 		
         %>
         <h2> <%= year %> <%= make %> <%= model %></h2>
@@ -236,14 +238,9 @@
 		    if (highestBidder != null && highestBidder.equals(username)) {
 		        out.println("You are already the highest bidder on this auction.");
 		    } else if (!canBid) {
-		        out.println("You cannot bid on this auction as an admin or customer representative.");
+		        out.println("You cannot bid on this auction as an admin, customer representative, or the seller.");
 		    } else {
 		        float bidAmount = Float.parseFloat(request.getParameter("bidAmount"));
-		        
-		        out.println(bidAmount >= highestBid + increment );
-
-		        out.println(highestBid >= price);
-		        out.println(highestBid + price + "");
 		        if (bidAmount >= highestBid + increment) {
 		            out.println("Bid placed successfully.");
 		            
@@ -286,6 +283,75 @@
 		            update.executeUpdate(updateAuction);
 		            update.close();
 		            
+		            highestBid = bidAmount;
+		            highestBidder = username;
+		            
+		            Statement findAutoBids = con.createStatement();
+	                String otherAutoBidsQuery = "select * from auto_bids where auctionID = " + auctionID;
+	                ResultSet autoBidders = findAutoBids.executeQuery(otherAutoBidsQuery);
+	                
+	                ArrayList<String> bidderList = new ArrayList<String>();
+	                ArrayList<Float> maxList = new ArrayList<Float>();
+	               	
+	                float highestAutoBid = 0;
+	                while(autoBidders.next()){
+	                	String bidderName = autoBidders.getString("username");
+	                	float maxBid = autoBidders.getFloat("max_amount");
+	                	if (maxBid > highestAutoBid){
+	                		highestAutoBid = maxBid;
+	                	}
+	                	
+	                	bidderList.add(bidderName);
+	                	maxList.add(maxBid);
+	                }
+	                
+	                while(highestBid < highestAutoBid){
+	                	int skips = 0;
+	                	for(int i = 0; i < bidderList.size(); i++){
+	                		if(highestBidder == null || !highestBidder.equals(bidderList.get(i))){
+	                			if(maxList.get(i) < highestBid){
+	                				skips++;
+	                			}else{
+	                				currentDateTime = LocalDateTime.now();
+		                    	    formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+		                    	    String insertQuery2 = "INSERT INTO bids (username, auctionID, time, amount) VALUES (?, ?, ?, ?)";
+		                    	    formattedDate = currentDateTime.format(formatter);
+		                    	    highestBid += increment;
+		                    	    highestBidder = bidderList.get(i);
+		                    	    
+		        		            PreparedStatement preparedStatement2 = con.prepareStatement(insertQuery2);
+		       		                // Set the values for the placeholders
+		       		                preparedStatement2.setString(1, bidderList.get(i));
+		       		                preparedStatement2.setInt(2, auctionID);
+		       		                preparedStatement2.setString(3, formattedDate);
+		       		                preparedStatement2.setFloat(4, highestBid);
+		       		
+		       		                // Execute the update
+		       		                preparedStatement2.executeUpdate();
+		        		            
+		        		            // send alert to highest bidder if not null: insert into alert_inbox new value (highestBidder, 'you have been outbid on the [year] [model] [make]')
+		        		            if (highestBidder != null) {
+		        		                Statement bidAlert = con.createStatement();
+		        		                String alertMessage = "You have been outbid on the " + model + " " + make + "! (New Price: " + highestBid + ")";
+		        		                String addBidAlert = "insert into alert_inbox values ('" + highestBidder + "', '" + formattedDate + "', '" + alertMessage + "')";
+		        		                bidAlert.executeUpdate(addBidAlert);
+		        		                bidAlert.close();
+		        		            }
+		        		            
+		        		            // update auction row: highest_bidder -> username, highest_bid -> new bid
+		        		            Statement update2 = con.createStatement();
+		        		            String updateAuction2 = "update auctions set `highest_bid` = " + highestBid + ", `highest_bidder` = '" + bidderList.get(i) + "' where auctionID = " + auctionID;
+		        		            update2.executeUpdate(updateAuction2);
+		        		            update2.close();
+	                			}
+	                    	}
+	                	}
+	                	
+	                	if(bidderList.size() == 1 || skips >= bidderList.size() - 1){
+	                		break;
+	                	}	
+	                }
+		            
 		            // refresh by redirecting to this page
 		            response.sendRedirect("auctionItemPage.jsp?auctionID=" + auctionID);
 		        } else {
@@ -305,10 +371,109 @@
     	</form>
 	    <p>
 		<% 
-	    
-		if (request.getMethod().equals("POST") && "placeAutoBid".equals(request.getParameter("action"))) {
-		
-		}
+		currentDateTime = LocalDateTime.now();
+		formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+	    auctionEndTime = LocalDateTime.parse(endTime, formatter);
+
+	    if (currentDateTime.isBefore(auctionEndTime)) {
+			if (request.getMethod().equals("POST") && "placeAutoBid".equals(request.getParameter("action"))) {
+				float bidAmount = Float.parseFloat(request.getParameter("autoBidAmount"));
+				if(!canBid){
+					 out.println("You cannot bid on this auction as an admin, customer representative, or the seller.");
+				}else if(bidAmount >= highestBid + increment){
+					Statement st1 = con.createStatement();
+					ResultSet rs1;
+					rs1 = st1.executeQuery("select * from auto_bids where username='" + username + "'");
+					if (rs1.next()){
+						String updateQuery = "update auto_bids set `max_amount` = " + bidAmount + " where username = '" + username + "'";
+						Statement st2 = con.createStatement();
+						st2.executeUpdate(updateQuery);
+						st2.close();
+					}else{
+						String insertQuery = "INSERT INTO auto_bids (username, auctionID, max_amount) VALUES (?, ?, ?)";
+			            PreparedStatement preparedStatement = con.prepareStatement(insertQuery);
+		                preparedStatement.setString(1, username);
+		                preparedStatement.setInt(2, auctionID);
+		                preparedStatement.setString(3, bidAmount + "");
+		                preparedStatement.executeUpdate();
+		                preparedStatement.close();
+					}
+					st1.close();
+					rs1.close();
+	                
+	                Statement findAutoBids = con.createStatement();
+	                String otherAutoBidsQuery = "select * from auto_bids where auctionID = " + auctionID;
+	                ResultSet autoBidders = findAutoBids.executeQuery(otherAutoBidsQuery);
+	                
+	                ArrayList<String> bidderList = new ArrayList<String>();
+	                ArrayList<Float> maxList = new ArrayList<Float>();
+	               	
+	                float highestAutoBid = 0;
+	                while(autoBidders.next()){
+	                	String bidderName = autoBidders.getString("username");
+	                	float maxBid = autoBidders.getFloat("max_amount");
+	                	if (maxBid > highestAutoBid){
+	                		highestAutoBid = maxBid;
+	                	}
+	                	
+	                	bidderList.add(bidderName);
+	                	maxList.add(maxBid);
+	                }
+	                
+	                while(highestBid < highestAutoBid){
+	                	int skips = 0;
+	                	for(int i = 0; i < bidderList.size(); i++){
+	                		if(highestBidder == null || !highestBidder.equals(bidderList.get(i))){
+	                			if(maxList.get(i) < highestBid){
+	                				skips++;
+	                			}else{
+	                				currentDateTime = LocalDateTime.now();
+		                    	    formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+		                    	    String insertQuery2 = "INSERT INTO bids (username, auctionID, time, amount) VALUES (?, ?, ?, ?)";
+		                    	    String formattedDate = currentDateTime.format(formatter);
+		                    	    highestBid += increment;
+		                    	    highestBidder = bidderList.get(i);
+		                    	    
+		        		            PreparedStatement preparedStatement2 = con.prepareStatement(insertQuery2);
+		       		                // Set the values for the placeholders
+		       		                preparedStatement2.setString(1, bidderList.get(i));
+		       		                preparedStatement2.setInt(2, auctionID);
+		       		                preparedStatement2.setString(3, formattedDate);
+		       		                preparedStatement2.setFloat(4, highestBid);
+		       		
+		       		                // Execute the update
+		       		                preparedStatement2.executeUpdate();
+		        		            
+		        		            // send alert to highest bidder if not null: insert into alert_inbox new value (highestBidder, 'you have been outbid on the [year] [model] [make]')
+		        		            if (highestBidder != null) {
+		        		                Statement bidAlert = con.createStatement();
+		        		                String alertMessage = "You have been outbid on the " + model + " " + make + "! (New Price: " + highestBid + ")";
+		        		                String addBidAlert = "insert into alert_inbox values ('" + highestBidder + "', '" + formattedDate + "', '" + alertMessage + "')";
+		        		                bidAlert.executeUpdate(addBidAlert);
+		        		                bidAlert.close();
+		        		            }
+		        		            
+		        		            // update auction row: highest_bidder -> username, highest_bid -> new bid
+		        		            Statement update = con.createStatement();
+		        		            String updateAuction = "update auctions set `highest_bid` = " + highestBid + ", `highest_bidder` = '" + bidderList.get(i) + "' where auctionID = " + auctionID;
+		        		            update.executeUpdate(updateAuction);
+		        		            update.close();
+	                			}
+	                    	}
+	                	}
+	                	
+	                	if(bidderList.size() == 1 || skips >= bidderList.size() - 1){
+	                		break;
+	                	}	
+	                }
+	                
+		            // refresh by redirecting to this page
+			        response.sendRedirect("auctionItemPage.jsp?auctionID=" + auctionID);   
+				}else {
+		            out.println("Bid amount is too low.");
+		        }
+			}
+	    }else out.println("Bidding time has passed");
 		
 		%>
     </section>
