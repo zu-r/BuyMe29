@@ -129,9 +129,9 @@
 		String powerTrain = vehicleAuctionResult.getString("power_train");
 		String condition = vehicleAuctionResult.getString("condition");
 		String fuelEfficiency = vehicleAuctionResult.getString("fuel_efficiency");
-		String isSelfDriving = vehicleAuctionResult.getString("fuel_efficiency") == "1" ? "Yes" : "No";
-		String hasCarPlay = vehicleAuctionResult.getString("has_car_play") == "1" ? "Yes" : "No";
-		String isRemoteStart = vehicleAuctionResult.getString("is_remote_start") == "1" ? "Yes" : "No";
+		String isSelfDriving = vehicleAuctionResult.getBoolean("fuel_efficiency") ? "Yes" : "No";
+        String hasCarPlay = vehicleAuctionResult.getBoolean("has_car_play") ? "Yes" : "No";
+        String isRemoteStart = vehicleAuctionResult.getBoolean("is_remote_start") ? "Yes" : "No";
 		String capacity = vehicleAuctionResult.getString("capacity") == null ? "N/A" : vehicleAuctionResult.getString("capacity");
 		String engineCC = vehicleAuctionResult.getString("engine_cc") == null ? "N/A" : vehicleAuctionResult.getString("engine_cc");
 		
