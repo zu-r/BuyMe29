@@ -107,7 +107,7 @@
     <br>
     <a href='logout.jsp'>Log out</a>
     <br><br>
-    <button class="green" onclick="window.location.href='sales_report.jsp'">Back to Sales Reports</button>
+    <button class="green" onclick=window.history.back>Back to Sales Reports</button>
 </div>
 </body>
 </html>

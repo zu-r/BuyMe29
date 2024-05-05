@@ -60,7 +60,7 @@
         <button onclick="window.location.href='earnings_per_end_user.jsp'">Earnings Per End User</button>
         <button onclick="window.location.href='best_selling_items.jsp'">Best Selling Items</button>
         <button onclick="window.location.href='best_buyers.jsp'">Best Buyers</button>
-        <button class="green" onclick="window.location.href='admin.jsp'">Back to Admin Homepage</button>
+        <button class="green" onclick=window.history.back>Back to Admin Homepage</button>
     </div>
 </body>
 </html>

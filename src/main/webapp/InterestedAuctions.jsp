@@ -4,6 +4,25 @@
 <head>
 <title>Interested Auctions</title>
     <style>
+    
+    
+    nav {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        nav a {
+            text-decoration: none;
+            color: #fff;
+            padding: 10px 20px;
+        }
+        nav a:hover {
+            background-color: #555;
+        }
+        
+        
 header {
 	text-align: center;
 	/* Centers the text inside the header, including your paragraph */
@@ -82,6 +101,15 @@ button.green:hover {
 	</header>
 </head>
 <body>
+  <nav id="main-nav">
+		<a href="BuyMe.jsp">Home</a> 
+		<a href="myBids.jsp">My Bids</a> 
+		<a href="myAuctions.jsp">My Auctions</a> 
+		<a href="InterestedAuctions.jsp">Interested Items</a> 
+		<a href="help.jsp">Help</a>
+		<a href="logout.jsp">Log Out</a>
+	</nav>
+
 	<table>
 		<thead>
 			<tr>

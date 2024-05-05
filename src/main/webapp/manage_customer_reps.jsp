@@ -56,7 +56,7 @@
         <br><br>
         <button onclick="window.location.href='delete_representative.jsp'">Delete a Representative</button>
         <button onclick="window.location.href='create_representative.jsp'">Create a Representative</button>
-        <button class="green" onclick="window.location.href='admin.jsp'">Back to Admin Homepage</button>
+        <button class="green" onclick=window.history.back>Back to Admin Homepage</button>
     </div>
 </body>
 </html>

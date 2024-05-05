@@ -1,6 +1,6 @@
 <%@ page import="java.sql.*" %>
-<%
-String selectedUserId = request.getParameter("userSelect");
+
+<%String selectedUserId = request.getParameter("userSelect");
 
 // Establish database connection
 Class.forName("com.mysql.jdbc.Driver");
@@ -16,9 +16,11 @@ ResultSet pastResults = pastAuctions.executeQuery();
 PreparedStatement ongoingAuctions = con.prepareStatement("SELECT v.make, v.model, v.year, a.highest_bid, a.close_time FROM auctions a, vehicles v WHERE a.VIN = v.VIN AND a.close_time > NOW() AND a.seller = ?");
 ongoingAuctions.setString(1, userID);
 ResultSet ongoingResults = ongoingAuctions.executeQuery();
-%><%@ page import="java.sql.*" %>
+%>
+
+<%@ page import="java.sql.*" %>
+
 <!DOCTYPE html>
-<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -97,96 +99,130 @@ ResultSet ongoingResults = ongoingAuctions.executeQuery();
             margin-top: 20px;
             text-align: center;
         }
+        /* Include styles for the navigation bar */
+        nav {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        nav a {
+            text-decoration: none;
+            color: #fff;
+            padding: 10px 20px;
+        }
+        nav a:hover {
+            background-color: #555;
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>My Auctions</h1>
+
+    <div class="container">
     
-    <!-- Add new auction button and user selection -->
-    <div class="add-section">
-        <button class="add-button green" onclick="window.location.href='PostAuction.jsp'">+ Add New Auction</button>
-        <form action="myAuctions.jsp" method="get">
-            <select name="userSelect">
-                <option value="<%= (String) session.getAttribute("user") %>">My Auctions</option>
-                <% 
-                    try {
-                        // Fetch all users
-                        PreparedStatement getUsers = con.prepareStatement("SELECT username FROM users WHERE account_type = 'user' AND username <> ?");
-                        getUsers.setString(1, (String) session.getAttribute("user"));
-                        ResultSet users = getUsers.executeQuery();
-                        while(users.next()) {
-                            userID = users.getString("username");
-                %>
-                <option value="<%= userID %>" <%= (selectedUserId != null && selectedUserId.equals(userID)) ? "selected" : "" %>><%= userID %></option>
-                <%
+            <h1>My Auctions</h1>
+    
+
+    <!-- Include the navigation bar -->
+    <nav>
+        <a href="BuyMe.jsp">Home</a> 
+        <a href="myBids.jsp">My Bids</a> 
+        <a href="myAuctions.jsp">My Auctions</a> 
+        <a href="InterestedAuctions.jsp">Interested Items</a> 
+        <a href="help.jsp">Help</a>
+        <a href="logout.jsp">Log Out</a>
+    </nav>
+
+        
+        <!-- Add new auction button and user selection -->
+        <div class="add-section">
+            <button class="add-button green" onclick="window.location.href='PostAuction.jsp'">+ Add New Auction</button>
+            <form action="myAuctions.jsp" method="get">
+                <select name="userSelect">
+                    <option value="<%= (String) session.getAttribute("user") %>">My Auctions</option>
+                    <% 
+                        try {
+                            // Fetch all users
+                            PreparedStatement getUsers = con.prepareStatement("SELECT username FROM users WHERE account_type = 'user' AND username <> ?");
+                            getUsers.setString(1, (String) session.getAttribute("user"));
+                            ResultSet users = getUsers.executeQuery();
+                            while(users.next()) {
+                                userID = users.getString("username");
+                    %>
+                    <option value="<%= userID %>" <%= (selectedUserId != null && selectedUserId.equals(userID)) ? "selected" : "" %>><%= userID %></option>
+                    <%
+                            }
+                        } catch(Exception e) {
+                            e.printStackTrace();
                         }
-                    } catch(Exception e) {
-                        e.printStackTrace();
-                    }
-                %>
-            </select>
-            <button type="submit">Search</button>
-        </form>
+                    %>
+                </select>
+                <button type="submit">Search</button>
+            </form>
+        </div>
+
+        <!-- Completed Auctions Table -->
+        <h2>Completed Auctions</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Year</th>
+                <th>Highest Bid</th>
+                <th>Close Time</th>
+            </tr>
+            </thead>
+            <tbody>
+                <% while (pastResults.next()) { %>
+                    <tr>
+                        <td><%= pastResults.getString("make") %></td>
+                        <td><%= pastResults.getString("model") %></td>
+                        <td><%= pastResults.getInt("year") %></td>
+                        <td>$<%= pastResults.getFloat("highest_bid") %></td>
+                        <td><%= pastResults.getTimestamp("close_time") %></td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+
+        <!-- Ongoing Auctions Table -->
+        <h2>Ongoing Auctions</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Year</th>
+                <th>Highest Bid</th>
+                <th>Close Time</th>
+            </tr>
+            </thead>
+            <tbody>
+                <% while (ongoingResults.next()) { %>
+                    <tr>
+                        <td><%= ongoingResults.getString("make") %></td>
+                        <td><%= ongoingResults.getString("model") %></td>
+                        <td><%= ongoingResults.getInt("year") %></td>
+                        <td>$<%= ongoingResults.getFloat("highest_bid") %></td>
+                        <td><%= ongoingResults.getTimestamp("close_time") %></td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+
+        <!-- Logout and Back buttons -->
+        <div class="logout">
+            <a href='logout.jsp'>Log out</a>
+        </div>
+        <button class="green" onclick="goBack()">Back to Previous Page</button>
     </div>
 
-    <!-- Completed Auctions Table -->
-    <h2>Completed Auctions</h2>
-    <table>
-        <thead>
-        <tr>
-            <th>Make</th>
-            <th>Model</th>
-            <th>Year</th>
-            <th>Highest Bid</th>
-            <th>Close Time</th>
-        </tr>
-        </thead>
-        <tbody>
-            <% while (pastResults.next()) { %>
-                <tr>
-                    <td><%= pastResults.getString("make") %></td>
-                    <td><%= pastResults.getString("model") %></td>
-                    <td><%= pastResults.getInt("year") %></td>
-                    <td>$<%= pastResults.getFloat("highest_bid") %></td>
-                    <td><%= pastResults.getTimestamp("close_time") %></td>
-                </tr>
-            <% } %>
-        </tbody>
-    </table>
-
-    <!-- Ongoing Auctions Table -->
-    <h2>Ongoing Auctions</h2>
-    <table>
-        <thead>
-        <tr>
-            <th>Make</th>
-            <th>Model</th>
-            <th>Year</th>
-            <th>Highest Bid</th>
-            <th>Close Time</th>
-        </tr>
-        </thead>
-        <tbody>
-            <% while (ongoingResults.next()) { %>
-                <tr>
-                    <td><%= ongoingResults.getString("make") %></td>
-                    <td><%= ongoingResults.getString("model") %></td>
-                    <td><%= ongoingResults.getInt("year") %></td>
-                    <td>$<%= ongoingResults.getFloat("highest_bid") %></td>
-                    <td><%= ongoingResults.getTimestamp("close_time") %></td>
-                </tr>
-            <% } %>
-        </tbody>
-    </table>
-
-    <!-- Logout and Back buttons -->
-    <div class="logout">
-        <a href='logout.jsp'>Log out</a>
-    </div>
-    <div class="back-button">
-        <button class="green" onclick="window.location.href='BuyMe.jsp'">Back</button>
-    </div>
-</div>
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+    </script>
 </body>
 </html>
