@@ -80,6 +80,37 @@
         .auction-box button:hover {
             background-color: #0056b3;
         }
+        
+        
+        .alert {
+            padding: 15px;
+            background-color: #007bff; /* Bootstrap primary blue */
+            color: white;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .alert button {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background-color: #ff4757; /* Bright red */
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            outline: none;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        .alert button:hover {
+            background-color: #e84118; /* Darker red */
+        }
     </style>
 </head>
 <body>
@@ -119,10 +150,8 @@
 
     <%-- Include Alerts Here --%>
     <%
-        HttpSession session2 = request.getSession();
-
             try {
-            	String userID = (String) session2.getAttribute("user");
+            	String userID = (String) session.getAttribute("user");
 
                 Class.forName("com.mysql.jdbc.Driver");
                 Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29", "root", "password");
@@ -158,7 +187,6 @@
             }
         
     %>
-	
 
     <div class="search-container">
         <h2>Get them before they are gone!</h2>
