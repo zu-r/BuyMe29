@@ -126,6 +126,7 @@
 		<a href="myAuctions.jsp">My Auctions</a> 
 		<a href="InterestedAuctions.jsp">Interested Items</a> 
 		<a href="help.jsp">Help</a>
+		<a href="AlertsInbox.jsp">My Alerts</a>
 		<a href="logout.jsp">Log Out</a>
 	</nav>
 	    <script>
@@ -144,6 +145,8 @@
 </head>
 <body>
     <%-- Include Alerts Here --%>
+    <!-- Display alerts for resolved/unresolved questions -->
+    
     <%
             try {
             	String userID = (String) session.getAttribute("user");

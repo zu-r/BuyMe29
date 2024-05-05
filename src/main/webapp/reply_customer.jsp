@@ -107,6 +107,7 @@
                         <input type="hidden" name="username" value="<%= username %>">
                         <input type="hidden" name="resolved" value="<%= resolved %>">
                         <input type="hidden" name="time" value="<%= time %>">
+                        <input type="hidden" name="problem" value="<%= problem %>">
 						<button type="submit" class="green">
 						    <%= resolved ? "Unresolve" : "Resolve" %>
 						</button>
