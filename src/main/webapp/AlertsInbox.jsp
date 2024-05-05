@@ -37,7 +37,7 @@
                 Class.forName("com.mysql.jdbc.Driver");
                 Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29", "root", "password");
 
-                PreparedStatement stmt = con.prepareStatement("SELECT * FROM alert_inbox WHERE username = ?");
+                PreparedStatement stmt = con.prepareStatement("SELECT * FROM alert_inbox WHERE username = ? order by time desc");
                 stmt.setString(1, (String) session.getAttribute("user"));
                 ResultSet rs = stmt.executeQuery();
 
