@@ -6,7 +6,7 @@ String pwd = request.getParameter("new password");
 
 
 Class.forName("com.mysql.jdbc.Driver");
-Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29","root", "Sansar12345$");
+Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29","root", "password");
 
 
 
