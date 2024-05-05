@@ -310,27 +310,27 @@
     if (currentDateTime.isBefore(auctionEndTime)) {
     	
 		if (request.getMethod().equals("POST") && "placeBid".equals(request.getParameter("action"))) {
-		    if (highestBidder != null && highestBidder.equals(username)) {
+		    if (!highestBidder.equals("N/A") && highestBidder.equals(username)) {
 		        out.println("You are already the highest bidder on this auction.");
 		    } else if (!canBid) {
 		        out.println("You cannot bid on this auction as an admin, customer representative, or the seller.");
 		    } else {
 		        float bidAmount = Float.parseFloat(request.getParameter("bidAmount"));
 		        if (bidAmount >= highestBid + increment) {
+		        	highestBid = bidAmount;
+		        	String originalBidder = highestBidder;
+		            highestBidder = username;
 		            out.println("Bid placed successfully.");
 		         	
 		            // send alert to highest bidder if not null: insert into alert_inbox new value (highestBidder, 'you have been outbid on the [year] [model] [make]')
 		            String formattedDate = currentDateTime.format(formatter);
-		            if (highestBidder != null && !highestBidder.equals(username)) {
+		            if (!originalBidder.equals("N/A") && !originalBidder.equals(username)) {
 		                Statement bidAlert = con.createStatement();
 		                String alertMessage = "You have been outbid on the " + year + " "+ make + " " + model + "! (VIN: " + vin + ") (New Price: " + highestBid + ")";
-		                String addBidAlert = "insert into alert_inbox values ('" + highestBidder + "', '" + formattedDate + "', '" + alertMessage + "')";
+		                String addBidAlert = "insert into alert_inbox values ('" + originalBidder + "', '" + formattedDate + "', '" + alertMessage + "')";
 		                bidAlert.executeUpdate(addBidAlert);
 		                bidAlert.close();
 		            }
-		            
-		            highestBid = bidAmount;
-		            highestBidder = username;
 		            
 		         	// Prepare the SQL query with placeholders
 		            String insertQuery = "INSERT INTO bids (username, auctionID, time, amount) VALUES (?, ?, ?, ?)";
@@ -375,7 +375,7 @@
 	                	int skips = 0;
 	                	for(int i = 0; i < bidderList.size(); i++){
 	                		if(highestBidder == null || !highestBidder.equals(bidderList.get(i))){
-	                			if(maxList.get(i) < highestBid){
+	                			if(maxList.get(i) < highestBid + increment){
 	                				skips++;
 	                			}else{
 	                				currentDateTime = LocalDateTime.now();
@@ -383,6 +383,7 @@
 		                    	    String insertQuery2 = "INSERT INTO bids (username, auctionID, time, amount) VALUES (?, ?, ?, ?)";
 		                    	    formattedDate = currentDateTime.format(formatter);
 		                    	    highestBid += increment;
+		                    	    String tempBidder = highestBidder;
 		                    	    highestBidder = bidderList.get(i);
 		                    	    
 		        		            PreparedStatement preparedStatement2 = con.prepareStatement(insertQuery2);
@@ -396,10 +397,10 @@
 		       		                preparedStatement2.executeUpdate();
 		        		            
 		        		            // send alert to highest bidder if not null: insert into alert_inbox new value (highestBidder, 'you have been outbid on the [year] [model] [make]')
-		        		            if (highestBidder != null) {
+		        		            if (!highestBidder.equals("N/A")) {
 		        		                Statement bidAlert = con.createStatement();
 		        		                String alertMessage = "You have been outbid on the " + year + " " + make + " " + model + "! (VIN: " + vin + ") (New Price: " + highestBid + ")";
-		        		                String addBidAlert = "insert into alert_inbox values ('" + highestBidder + "', '" + formattedDate + "', '" + alertMessage + "')";
+		        		                String addBidAlert = "insert into alert_inbox values ('" + tempBidder  + "', '" + formattedDate + "', '" + alertMessage + "')";
 		        		                bidAlert.executeUpdate(addBidAlert);
 		        		                bidAlert.close();
 		        		            }
@@ -490,7 +491,7 @@
 	                	int skips = 0;
 	                	for(int i = 0; i < bidderList.size(); i++){
 	                		if(highestBidder == null || !highestBidder.equals(bidderList.get(i))){
-	                			if(maxList.get(i) < highestBid){
+	                			if(maxList.get(i) < highestBid + increment){
 	                				skips++;
 	                			}else{
 	                				currentDateTime = LocalDateTime.now();
@@ -498,6 +499,7 @@
 		                    	    String insertQuery2 = "INSERT INTO bids (username, auctionID, time, amount) VALUES (?, ?, ?, ?)";
 		                    	    String formattedDate = currentDateTime.format(formatter);
 		                    	    highestBid += increment;
+		                    	    String tempBidder = highestBidder;
 		                    	    highestBidder = bidderList.get(i);
 		                    	    
 		        		            PreparedStatement preparedStatement2 = con.prepareStatement(insertQuery2);
@@ -511,10 +513,10 @@
 		       		                preparedStatement2.executeUpdate();
 		        		            
 		        		            // send alert to highest bidder if not null: insert into alert_inbox new value (highestBidder, 'you have been outbid on the [year] [model] [make]')
-		        		            if (highestBidder != null) {
+		        		            if (!tempBidder.equals("N/A")) {
 		        		                Statement bidAlert = con.createStatement();
 		        		                String alertMessage = "You have been outbid on the " + year + " " + make + " " + model + "! (VIN: " + vin + ") (New Price: " + highestBid + ")";
-		        		                String addBidAlert = "insert into alert_inbox values ('" + highestBidder + "', '" + formattedDate + "', '" + alertMessage + "')";
+		        		                String addBidAlert = "insert into alert_inbox values ('" + tempBidder  + "', '" + formattedDate + "', '" + alertMessage + "')";
 		        		                bidAlert.executeUpdate(addBidAlert);
 		        		                bidAlert.close();
 		        		            }
