@@ -140,26 +140,17 @@ ResultSet rs1 = st1.executeQuery("SELECT auctionID FROM auctions order by auctio
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            margin-top: 20px; /* Added margin-top */
+            width: 100%; /* Added width */
         }
         button:hover {
             background-color: #c82333;
-        }
-        a {
-            text-decoration: none;
-            color: #007bff;
-            display: block;
-            margin-top: 20px;
-        }
-        a:hover {
-            text-decoration: underline;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Delete Top Bid From Auction</h1>
-        <a href='logout.jsp'>Log out</a>
-        <a href='customer_rep.jsp'>Back</a>&nbsp;
         <form action="remove_bid.jsp" method="post">
         	<label for="aucId">AuctionID:</label>
             <select name="aucId">
@@ -168,6 +159,9 @@ ResultSet rs1 = st1.executeQuery("SELECT auctionID FROM auctions order by auctio
                 <% } %>
             </select>
             <button type="submit">Delete Top Bid from Auction</button>
+        </form>
+        <form action="customer_rep.jsp" method="POST">
+            <button type="submit">Back</button>
         </form>
     </div>
 </body>
