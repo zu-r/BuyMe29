@@ -35,9 +35,8 @@
         th {
             background-color: #f2f2f2;
         }
-        button {
+        button, .add-button {
             display: block;
-            width: 100%;
             margin-bottom: 10px;
             padding: 12px;
             border: none;
@@ -48,13 +47,15 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
-        button.green {
+        button.green, .add-button.green {
             background-color: #28a745;
         }
-        button.green:hover {
+        button.green:hover, .add-button.green:hover {
             background-color: #218838;
         }
-            .add-button {
+
+           
+        .add-button {
             position: fixed;
             top: 20px;
             right: 20px;
@@ -65,6 +66,9 @@
 <body>
 <div class="container">
     <h1>My Auctions</h1>
+    
+        <button class="add-button green" onclick="window.location.href='PostAuction.jsp'">+ Add New Auction</button>
+    
 
     <button class="add-button green" onclick="window.location.href='PostAuction.jsp'">+ Add New Auction</button>
 
