@@ -21,15 +21,20 @@
             text-align: center;
             color: #333;
         }
-        a {
-            text-decoration: none;
-            color: #007bff;
+        button {
+            padding: 10px 20px;
             margin-bottom: 10px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
             display: block;
-            text-align: center;
+            width: 100%;
         }
-        a:hover {
-            text-decoration: underline;
+        button:hover {
+            background-color: #0056b3;
         }
         form {
             margin-top: 20px;
@@ -66,8 +71,6 @@
 </head>
 <body>
     <div class="container">
-        <a href='logout.jsp'>Log out</a>
-        <a href='customer_rep.jsp'>Back</a>
         <h2>Update User Password:</h2>
         <div class="form-container">
             <form action="updatePassword.jsp" method="POST">
@@ -78,6 +81,7 @@
                 <input type="submit" value="Update Password"/>
             </form>
         </div>
+        <button onclick="window.location.href='customer_rep.jsp'">Back</button>
     </div>
 </body>
 </html>
