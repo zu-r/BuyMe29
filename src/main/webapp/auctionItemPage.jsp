@@ -145,17 +145,18 @@
  		String year = vehicleAuctionResult.getString("year");
  		String make = vehicleAuctionResult.getString("make");
 		String model = vehicleAuctionResult.getString("model");
-		String mileage = vehicleAuctionResult.getString("mileage");
+		String mileage = vehicleAuctionResult.getString("mileage").equals("-1") ? "N/A" : vehicleAuctionResult.getString("mileage");
 		String color = vehicleAuctionResult.getString("color");
 		String bodyStyle = vehicleAuctionResult.getString("body_style");
 		String powerTrain = vehicleAuctionResult.getString("power_train");
 		String condition = vehicleAuctionResult.getString("condition");
-		String fuelEfficiency = vehicleAuctionResult.getString("fuel_efficiency");
+		String fuelEfficiency = vehicleAuctionResult.getString("fuel_efficiency").equals("-1") ? "N/A" : vehicleAuctionResult.getString("fuel_efficiency");
 		String isSelfDriving = vehicleAuctionResult.getBoolean("is_self_driving") ? "Yes" : "No";
         String hasCarPlay = vehicleAuctionResult.getBoolean("has_car_play") ? "Yes" : "No";
         String isRemoteStart = vehicleAuctionResult.getBoolean("is_remote_start") ? "Yes" : "No";
-		String capacity = vehicleAuctionResult.getString("capacity") == null ? "N/A" : vehicleAuctionResult.getString("capacity");
-		String engineCC = vehicleAuctionResult.getString("engine_cc") == null ? "N/A" : vehicleAuctionResult.getString("engine_cc");
+		//String capacity = vehicleAuctionResult.getString("capacity").equals("-1") ? "N/A" : vehicleAuctionResult.getString("capacity");
+		String capacity = vehicleAuctionResult.getString("capacity") == null ? "N/A" : vehicleAuctionResult.getString("capacity").equals("-1") ? "N/A" : vehicleAuctionResult.getString("capacity");
+		String engineCC = vehicleAuctionResult.getString("engine_cc") == null ? "N/A" : vehicleAuctionResult.getString("engine_cc").equals("-1") ? "N/A" : vehicleAuctionResult.getString("engine_cc");
 		
 		// Auction details
 		String endTime = vehicleAuctionResult.getString("close_time");
@@ -164,7 +165,7 @@
 		float increment = vehicleAuctionResult.getFloat("increment");
 		float initialPrice = vehicleAuctionResult.getFloat("initial_price");
 		float highestBid = vehicleAuctionResult.getFloat("highest_bid") > initialPrice ? vehicleAuctionResult.getFloat("highest_bid") : initialPrice;
-		String highestBidder = vehicleAuctionResult.getString("highest_bidder");
+		String highestBidder = vehicleAuctionResult.getString("highest_bidder") == null ? "N/A" : vehicleAuctionResult.getString("highest_bidder");
 		String seller = vehicleAuctionResult.getString("seller");
 		
 		selectDetailsStmt.close();
@@ -181,8 +182,66 @@
         }
 		
         %>
-        <h2> <%= year %> <%= make %> <%= model %></h2>
-        <h3>Current Price: $<%= price > highestBid ? price: highestBid%></h3>
+        
+        <% 
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+        LocalDateTime auctionEndTime = LocalDateTime.parse(endTime, formatter);
+
+        if (currentDateTime.isBefore(auctionEndTime)) {
+	        %>       
+	        <h2> <%= year %> <%= make %> <%= model %></h2>
+	        <h3>Current Price: $<%= price > highestBid ? price: highestBid%></h3>
+	        <% } else { %>
+	        <h2>Auction Closed: <%= year %> <%= make %> <%= model %></h2>
+	        <h3>Final Price: $<%= price > highestBid ? price: highestBid%></h3>
+	        <% 
+	        //auction close logic
+	        if(highestBidder.equals("N/A") || highestBid < reserve){
+	        	%>
+	        	<h3>This vehicle did not sell.</h3>
+	        	<%
+	        	// auction did not sell, send alert to seller that it did not sell: "Your auction for the [year] [make] [model] (VIN: [VIN]) did not sell."
+	        	String didNotSellMessage = "Your auction for the " + year + " " + make + " " + model + " (VIN: " + vin + ") did not sell.";
+	        	String checkDupeMessageQuery = "select * from alert_inbox where username = '" + seller + "' and message = '" + didNotSellMessage + "'";
+	        	Statement checkDupeMessage = con.createStatement();
+	        	ResultSet dupeMessages = checkDupeMessage.executeQuery(checkDupeMessageQuery);
+	        	
+	        	if(!dupeMessages.next()){
+	        		currentDateTime = LocalDateTime.now();
+	        		String formattedDate = currentDateTime.format(formatter);
+	        		
+	        		Statement auctionAlert = con.createStatement();
+	                String addBidAlert = "insert into alert_inbox values ('" + seller + "', '" + formattedDate + "', '" + didNotSellMessage + "')";
+	                auctionAlert.executeUpdate(addBidAlert);
+	                auctionAlert.close();
+	        	}
+	        	checkDupeMessage.close();
+	        	dupeMessages.close();
+	        }else{
+	        	%>
+	        	<h3><%= highestBidder %> has won this auction!</h3>
+	        	<%
+	        	// auction sold, send alert to highestBidder: "You won the auction for the [year] [make] [model]! (VIN: [VIN])"
+	        	String soldMessage = "You won the action for the " + year + " " + make + " " + model + "! (VIN: " + vin + ")";
+	        	String checkDupeMessageQuery = "select * from alert_inbox where username = '" + highestBidder + "' and message = '" + soldMessage + "'";
+	        	Statement checkDupeMessage = con.createStatement();
+	        	ResultSet dupeMessages = checkDupeMessage.executeQuery(checkDupeMessageQuery);
+	        	
+	        	if(!dupeMessages.next()){
+	        		currentDateTime = LocalDateTime.now();
+	        		String formattedDate = currentDateTime.format(formatter);
+	        		
+	        		Statement auctionAlert = con.createStatement();
+	                String addBidAlert = "insert into alert_inbox values ('" + highestBidder + "', '" + formattedDate + "', '" + soldMessage + "')";
+	                auctionAlert.executeUpdate(addBidAlert);
+	                auctionAlert.close();
+	        	}
+	        	checkDupeMessage.close();
+	        	dupeMessages.close();
+	        }
+        } %>
+        
         <h4>Closing Date/Time: <%= endTime %></h4>
         <%-- Display detailed vehicle information --%>
         <ul>
@@ -244,13 +303,9 @@
     	</form>
 	    <p>
 	<% 
-    LocalDateTime currentDateTime = LocalDateTime.now();
-
-    // Parse the endTime from the database (assuming it's stored as a string)
-
-    // Create a DateTimeFormatter to parse the endTime string
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
-    LocalDateTime auctionEndTime = LocalDateTime.parse(endTime, formatter);
+    currentDateTime = LocalDateTime.now();
+    formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+    auctionEndTime = LocalDateTime.parse(endTime, formatter);
 
     if (currentDateTime.isBefore(auctionEndTime)) {
     	
@@ -263,6 +318,8 @@
 		        float bidAmount = Float.parseFloat(request.getParameter("bidAmount"));
 		        if (bidAmount >= highestBid + increment) {
 		            out.println("Bid placed successfully.");
+		            highestBid = bidAmount;
+		            highestBidder = username;
 		            
 		            // insert new value into bids table with username, datetime, and new amount
 		           
@@ -289,9 +346,9 @@
 		          
 		            
 		            // send alert to highest bidder if not null: insert into alert_inbox new value (highestBidder, 'you have been outbid on the [year] [model] [make]')
-		            if (highestBidder != null) {
+		            if (highestBidder != null && !highestBidder.equals(username)) {
 		                Statement bidAlert = con.createStatement();
-		                String alertMessage = "You have been outbid on the " + model + " " + make + "! (VIN: " + vin + ")";
+		                String alertMessage = "You have been outbid on the " + year + " "+ make + " " + model + "! (VIN: " + vin + ")";
 		                String addBidAlert = "insert into alert_inbox values ('" + highestBidder + "', '" + formattedDate + "', '" + alertMessage + "')";
 		                bidAlert.executeUpdate(addBidAlert);
 		                bidAlert.close();
@@ -303,8 +360,7 @@
 		            update.executeUpdate(updateAuction);
 		            update.close();
 		            
-		            highestBid = bidAmount;
-		            highestBidder = username;
+		            
 		            
 		            Statement findAutoBids = con.createStatement();
 	                String otherAutoBidsQuery = "select * from auto_bids where auctionID = " + auctionID;
@@ -352,7 +408,7 @@
 		        		            // send alert to highest bidder if not null: insert into alert_inbox new value (highestBidder, 'you have been outbid on the [year] [model] [make]')
 		        		            if (highestBidder != null) {
 		        		                Statement bidAlert = con.createStatement();
-		        		                String alertMessage = "You have been outbid on the " + model + " " + make + "! (New Price: " + highestBid + ")";
+		        		                String alertMessage = "You have been outbid on the " + year + " " + make + " " + model + "! (New Price: " + highestBid + ")";
 		        		                String addBidAlert = "insert into alert_inbox values ('" + highestBidder + "', '" + formattedDate + "', '" + alertMessage + "')";
 		        		                bidAlert.executeUpdate(addBidAlert);
 		        		                bidAlert.close();
@@ -467,7 +523,7 @@
 		        		            // send alert to highest bidder if not null: insert into alert_inbox new value (highestBidder, 'you have been outbid on the [year] [model] [make]')
 		        		            if (highestBidder != null) {
 		        		                Statement bidAlert = con.createStatement();
-		        		                String alertMessage = "You have been outbid on the " + model + " " + make + "! (New Price: " + highestBid + ")";
+		        		                String alertMessage = "You have been outbid on the " + year + " " + make + " " + model + "! (New Price: " + highestBid + ")";
 		        		                String addBidAlert = "insert into alert_inbox values ('" + highestBidder + "', '" + formattedDate + "', '" + alertMessage + "')";
 		        		                bidAlert.executeUpdate(addBidAlert);
 		        		                bidAlert.close();

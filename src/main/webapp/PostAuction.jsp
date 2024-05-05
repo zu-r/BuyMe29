@@ -143,18 +143,18 @@
         String model = request.getParameter("model");
         String year = request.getParameter("year");
         // Additional vehicle parameters
-        String mileage = request.getParameter("mileage");
+        String mileage = request.getParameter("mileage") != null ? String.valueOf(request.getParameter("mileage")) : "-1";
         String color = request.getParameter("color");
         String body_style = request.getParameter("body_style");
         String power_train = request.getParameter("power_train");
         String condition = request.getParameter("condition");
-        String fuel_efficiency = request.getParameter("fuel_efficiency");
+        String fuel_efficiency = request.getParameter("fuel_efficiency") != null ? String.valueOf(request.getParameter("fuel_efficiency")) : "-1";
         String type = request.getParameter("type");
         String is_self_driving = request.getParameter("is_self_driving");
         String has_car_play = request.getParameter("has_car_play");
         String is_remote_start = request.getParameter("is_remote_start");
-        String capacity = request.getParameter("capacity");
-        String engine_cc = request.getParameter("engine_cc");
+        String capacity = request.getParameter("capacity") != null ? String.valueOf(request.getParameter("capacity")) : "-1";
+        String engine_cc = request.getParameter("engine_cc") != null ? String.valueOf(request.getParameter("engine_cc")) : "-1";
         
         String initialPrice = request.getParameter("initial_price");
         String secretMinimumPrice = request.getParameter("secret_minimum_price");
@@ -183,18 +183,18 @@
 				psVehicle.setString(2, make);
 				psVehicle.setString(3, model);
 				psVehicle.setInt(4, Integer.parseInt(year));
-				psVehicle.setInt(5, mileage != null && !mileage.isEmpty() ? Integer.parseInt(mileage) : java.sql.Types.INTEGER);
+				psVehicle.setInt(5, Integer.parseInt(mileage));
 				psVehicle.setString(6, color);
 				psVehicle.setString(7, body_style);
 				psVehicle.setString(8, power_train);
 				psVehicle.setString(9, condition);
-				psVehicle.setFloat(10, fuel_efficiency != null && !fuel_efficiency.isEmpty() ? Float.parseFloat(fuel_efficiency) : java.sql.Types.FLOAT);
+				psVehicle.setFloat(10, Float.parseFloat(fuel_efficiency));
 				psVehicle.setString(11, type);
 				psVehicle.setBoolean(12, Boolean.parseBoolean(is_self_driving));
 				psVehicle.setBoolean(13, Boolean.parseBoolean(has_car_play));
 				psVehicle.setBoolean(14, Boolean.parseBoolean(is_remote_start));
-				psVehicle.setInt(15, capacity != null && !capacity.isEmpty() ? Integer.parseInt(capacity) : java.sql.Types.INTEGER);
-				psVehicle.setInt(16, engine_cc != null && !engine_cc.isEmpty() ? Integer.parseInt(engine_cc) : java.sql.Types.INTEGER);
+				psVehicle.setInt(15, Integer.parseInt(capacity));
+				psVehicle.setInt(16, Integer.parseInt(engine_cc));
 				psVehicle.executeUpdate();
 
 
