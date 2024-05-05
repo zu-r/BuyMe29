@@ -231,7 +231,7 @@
     LocalDateTime auctionEndTime = LocalDateTime.parse(endTime, formatter);
 
     if (currentDateTime.isBefore(auctionEndTime)) {
-
+    	
 		if (request.getMethod().equals("POST") && "placeBid".equals(request.getParameter("action"))) {
 		    if (highestBidder != null && highestBidder.equals(username)) {
 		        out.println("You are already the highest bidder on this auction.");
@@ -239,7 +239,12 @@
 		        out.println("You cannot bid on this auction as an admin or customer representative.");
 		    } else {
 		        float bidAmount = Float.parseFloat(request.getParameter("bidAmount"));
-		        if (bidAmount >= highestBid + increment && highestBid >= price) {
+		        
+		        out.println(bidAmount >= highestBid + increment );
+
+		        out.println(highestBid >= price);
+		        out.println(highestBid + price + "");
+		        if (bidAmount >= highestBid + increment) {
 		            out.println("Bid placed successfully.");
 		            
 		            // insert new value into bids table with username, datetime, and new amount
