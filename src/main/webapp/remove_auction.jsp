@@ -18,7 +18,7 @@ if (selectedAucId != null && !selectedAucId.isEmpty()) {
 }
 
 Statement st1 = con.createStatement();
-ResultSet rs1 = st1.executeQuery("SELECT auctionID FROM auctions");
+ResultSet rs1 = st1.executeQuery("SELECT auctionID FROM auctions order by auctionID");
 
 %>
 <!DOCTYPE html>
