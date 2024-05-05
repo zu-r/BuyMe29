@@ -155,7 +155,8 @@
                                "JOIN interested_items i ON v.make = i.make AND v.model = i.model " +
                                "LEFT JOIN dismissed_alerts d ON a.auctionID = d.auctionID AND d.username = ? " +
                                "WHERE i.username = ? AND a.close_time > NOW() AND d.auctionID IS NULL " +
-                               "ORDER BY a.close_time ASC";
+                               "ORDER BY a.close_time ASC " +
+                               "LIMIT 1";
 
                 PreparedStatement stmt = con.prepareStatement(query);
                 stmt.setString(1, userID);
@@ -239,47 +240,60 @@
     </div>
 
 <div class="auctions-container">
-        <% 
-            try {
-                Class.forName("com.mysql.jdbc.Driver");
-                Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29", "root", "password");
-                PreparedStatement stmt = con.prepareStatement(
-                    "SELECT v.make, v.model, u.username, a.auctionID " +
-                    "FROM vehicles v " +
-                    "JOIN auctions a ON v.VIN = a.VIN " +
-                    "JOIN users u ON a.seller = u.username " +
-                    "WHERE v.type = 'car' " +
-                    "ORDER BY a.close_time DESC " +
-                    "LIMIT 6"
-                );
-                ResultSet rs = stmt.executeQuery();
-                while (rs.next()) {
-                    String make = rs.getString("make");
-                    String model = rs.getString("model");
-                    String username = rs.getString("username");
-                    String auctionID = rs.getString("auctionID");
-        %>
-                    <div class="auction-box">
-                        <p>Make: <%= make %></p>
-                        <p>Model: <%= model %></p>
-                        <p>Posted By: <%= username %></p>
-                        <button onclick="viewAuction('<%= auctionID %>')">View</button>
-                    </div>
-        <%
-                }
-                rs.close();
-                stmt.close();
-                con.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        %>
-    </div>
+    <% 
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29", "root", "password");
+            PreparedStatement stmt = con.prepareStatement(
+                "SELECT v.make, v.model, v.year, u.username, a.auctionID, a.close_time, IFNULL(a.highest_bid, a.initial_price) AS display_price " +
+                "FROM vehicles v " +
+                "JOIN auctions a ON v.VIN = a.VIN " +
+                "JOIN users u ON a.seller = u.username " +
+                "WHERE v.type = ? AND a.close_time > NOW() " + // Change the type condition as needed
+                "ORDER BY a.close_time DESC " +
+                "LIMIT 6"
+            );
+            stmt.setString(1, "car"); // Set the vehicle type dynamically based on your requirement
 
-    <script>
-        function viewAuction(auctionID) {
-            window.location.href = 'auctionItemPage.jsp?auctionID=' + auctionID;
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String make = rs.getString("make");
+                String model = rs.getString("model");
+                String year = rs.getString("year");
+                String username = rs.getString("username");
+                String auctionID = rs.getString("auctionID");
+                String closeTime = rs.getString("close_time");
+                String displayPrice = rs.getString("display_price");
+
+                // Render the auction box with additional details
+        %>
+                <div class="auction-box">
+                    <p>Make: <%= make %></p>
+                    <p>Model: <%= model %></p>
+                    <p>Year: <%= year %></p>
+                    <p>Posted By: <%= username %></p>
+                    <p>Ends: <%= closeTime %></p>
+                    <p>Price: <%= displayPrice %></p>
+                    <button onclick="viewAuction('<%= auctionID %>')">View</button>
+                </div>
+        <%
+            }
+            rs.close();
+            stmt.close();
+            con.close();
+        } catch (Exception e) {
+            out.println("An error occurred: " + e.getMessage());
+            e.printStackTrace();
         }
-    </script>
+    %>
+</div>
+
+<script>
+    // JavaScript function to redirect to auction details page
+    function viewAuction(auctionID) {
+        window.location.href = 'auctionItemPage.jsp?auctionID=' + auctionID;
+    }
+</script>
 </body>
 </html>

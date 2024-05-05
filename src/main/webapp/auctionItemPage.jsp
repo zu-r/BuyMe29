@@ -57,7 +57,7 @@
             margin-bottom: 20px;
         }
         nav a {
-            text-decosration: none;
+            text-decoration: none;
             color: #fff;
             padding: 10px 20px;
         }
@@ -75,6 +75,26 @@
         .filter-container form {
             display: inline-block;
         }
+        
+        .bid-history-container {
+        height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+
+    .bid-history-container table {
+        width: 100%;
+        border-collapse: collapse; /* Ensure table borders collapse properly */
+    }
+
+    .bid-history-container th,
+    .bid-history-container td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left; /* Align text to the left within table cells */
+    }
+    
     </style>
 </head>
 <body>
@@ -479,8 +499,9 @@
     </section>
     
     <section id="bids-section">
-        <h2>Bid History</h2>
-        <%-- Retrieve and display bids for this auction --%>
+    <h2>Bid History</h2>
+    <%-- Retrieve and display bids for this auction --%>
+    <div class="bid-history-container">
         <table>
             <thead>
                 <tr>
@@ -493,13 +514,13 @@
                 <%-- Retrieve and display bids --%>
                 <% 
                 Statement retrieveBids = con.createStatement();
-        		String retrieveBidsQuery = "select * from bids where auctionID = " + auctionID + " order by amount desc";
-        		ResultSet bids = retrieveBids.executeQuery(retrieveBidsQuery);
+                String retrieveBidsQuery = "select * from bids where auctionID = " + auctionID + " order by amount desc";
+                ResultSet bids = retrieveBids.executeQuery(retrieveBidsQuery);
                 
-        		while(bids.next()){
-        			String bidUsername = bids.getString("username");
-        			Timestamp time = bids.getTimestamp("time");
-        			float amount = bids.getFloat("amount");
+                while(bids.next()){
+                    String bidUsername = bids.getString("username");
+                    Timestamp time = bids.getTimestamp("time");
+                    float amount = bids.getFloat("amount");
                 %>
                 <tr>
                     <td><%= bidUsername %></td>
@@ -507,12 +528,76 @@
                     <td>$<%= amount %></td>
                 </tr>
                 <% 
-        		}
+                }
                 retrieveBids.close();
                 bids.close();
                 %>
             </tbody>
         </table>
-    </section>
+    </div>
+    
+    
+</section>
+
+<div class="auctions-container">
+        <% 
+            try {
+                Class.forName("com.mysql.jdbc.Driver");
+                con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29", "root", "password");
+                String query = "SELECT v.make, v.model, v.year, u.username, a.auctionID, a.close_time, IFNULL(a.highest_bid, a.initial_price) AS display_price " +
+                        "FROM vehicles v " +
+                        "JOIN auctions a ON v.VIN = a.VIN " +
+                        "JOIN users u ON a.seller = u.username " +
+                        "WHERE v.type = (" +
+                        "    SELECT type " +
+                        "    FROM vehicles " +
+                        "    JOIN auctions ON vehicles.VIN = auctions.VIN " +
+                        "    WHERE auctions.auctionID = ?)" +
+                        
+                        
+                        "AND a.close_time > now() " +
+                        "ORDER BY a.close_time DESC "
+                        ;
+
+         PreparedStatement preparedStatement = con.prepareStatement(query);
+         preparedStatement.setInt(1, auctionID);
+
+         ResultSet resultSet = preparedStatement.executeQuery();
+                
+                while (resultSet.next()) {
+                    make = resultSet.getString("make");
+                    model = resultSet.getString("model");
+                    year = resultSet.getString("year");
+                    username = resultSet.getString("username");
+                    auctionID = Integer.parseInt(resultSet.getString("auctionID"));
+                    String closeTime = resultSet.getString("close_time");
+                    String displayPrice = resultSet.getString("display_price");
+        %>
+                    <div class="auction-box">
+                        <p>Make: <%= make %></p>
+                        <p>Model: <%= model %></p>
+                        <p>Year: <%= year %></p>
+                        <p>Posted By: <%= username %></p>
+                        <p>Ends: <%= closeTime %></p>
+                    	<p>Price: <%= displayPrice %></p>
+                        <button onclick="viewAuction('<%= auctionID %>')">View</button>
+                    </div>
+        <%
+                }
+                resultSet.close();
+                preparedStatement.close();
+                con.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        %>
+    </div>
+
+    <script>
+        function viewAuction(auctionID) {
+            window.location.href = 'auctionItemPage.jsp?auctionID=' + auctionID;
+        }
+    </script>
+
 </body>
 </html>

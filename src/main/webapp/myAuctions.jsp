@@ -16,10 +16,12 @@ ResultSet pastResults = pastAuctions.executeQuery();
 PreparedStatement ongoingAuctions = con.prepareStatement("SELECT v.make, v.model, v.year, a.highest_bid, a.close_time FROM auctions a, vehicles v WHERE a.VIN = v.VIN AND a.close_time > NOW() AND a.seller = ?");
 ongoingAuctions.setString(1, userID);
 ResultSet ongoingResults = ongoingAuctions.executeQuery();
-%>
+%><%@ page import="java.sql.*" %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Auctions</title>
     <style>
         body {
@@ -27,18 +29,22 @@ ResultSet ongoingResults = ongoingAuctions.executeQuery();
             background-color: #f0f0f0;
             margin: 0;
             padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
         .container {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
+            width: 800px;
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
         }
         h1 {
             text-align: center;
             color: #333;
+            margin-bottom: 20px;
         }
         table {
             width: 100%;
@@ -47,15 +53,13 @@ ResultSet ongoingResults = ongoingAuctions.executeQuery();
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 12px;
             text-align: left;
         }
         th {
             background-color: #f2f2f2;
         }
-        button, .add-button {
-            display: block;
-            margin-bottom: 10px;
+        button {
             padding: 12px;
             border: none;
             background-color: #007bff;
@@ -64,20 +68,34 @@ ResultSet ongoingResults = ongoingAuctions.executeQuery();
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            margin-right: 10px;
         }
-        button.green, .add-button.green {
+        button.green {
             background-color: #28a745;
         }
-        button.green:hover, .add-button.green:hover {
-            background-color: #218838;
+        button:hover {
+            background-color: #0056b3;
         }
-
-           
-        .add-button {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: auto;
+        select, button[type="submit"] {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        .add-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .logout {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .back-button {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
         }
     </style>
 </head>
@@ -85,32 +103,32 @@ ResultSet ongoingResults = ongoingAuctions.executeQuery();
 <div class="container">
     <h1>My Auctions</h1>
     
-    <!-- Add new auction buttons -->
-    <button class="add-button green" onclick="window.location.href='PostAuction.jsp'">+ Add New Auction</button>
-    
-    <!-- Dropdown for selecting users -->
-    <form action="myAuctions.jsp" method="get">
-        <select name="userSelect">
-            <option value="<%= (String) session.getAttribute("user") %>">My Auctions</option>
-            <% 
-                try {
-                    // Fetch all users
-                    PreparedStatement getUsers = con.prepareStatement("SELECT username FROM users WHERE account_type = 'user' AND username <> ?");
-                    getUsers.setString(1, (String) session.getAttribute("user"));
-                    ResultSet users = getUsers.executeQuery();
-                    while(users.next()) {
-                        userID = users.getString("username");
-            %>
-            <option value="<%= userID %>" <%= (selectedUserId != null && selectedUserId.equals(userID)) ? "selected" : "" %>><%= userID %></option>
-            <%
+    <!-- Add new auction button and user selection -->
+    <div class="add-section">
+        <button class="add-button green" onclick="window.location.href='PostAuction.jsp'">+ Add New Auction</button>
+        <form action="myAuctions.jsp" method="get">
+            <select name="userSelect">
+                <option value="<%= (String) session.getAttribute("user") %>">My Auctions</option>
+                <% 
+                    try {
+                        // Fetch all users
+                        PreparedStatement getUsers = con.prepareStatement("SELECT username FROM users WHERE account_type = 'user' AND username <> ?");
+                        getUsers.setString(1, (String) session.getAttribute("user"));
+                        ResultSet users = getUsers.executeQuery();
+                        while(users.next()) {
+                            userID = users.getString("username");
+                %>
+                <option value="<%= userID %>" <%= (selectedUserId != null && selectedUserId.equals(userID)) ? "selected" : "" %>><%= userID %></option>
+                <%
+                        }
+                    } catch(Exception e) {
+                        e.printStackTrace();
                     }
-                } catch(Exception e) {
-                    e.printStackTrace();
-                }
-            %>
-        </select>
-        <button type="submit">Search</button>
-    </form>
+                %>
+            </select>
+            <button type="submit">Search</button>
+        </form>
+    </div>
 
     <!-- Completed Auctions Table -->
     <h2>Completed Auctions</h2>
@@ -130,7 +148,7 @@ ResultSet ongoingResults = ongoingAuctions.executeQuery();
                     <td><%= pastResults.getString("make") %></td>
                     <td><%= pastResults.getString("model") %></td>
                     <td><%= pastResults.getInt("year") %></td>
-                    <td><%= pastResults.getFloat("highest_bid") %></td>
+                    <td>$<%= pastResults.getFloat("highest_bid") %></td>
                     <td><%= pastResults.getTimestamp("close_time") %></td>
                 </tr>
             <% } %>
@@ -155,7 +173,7 @@ ResultSet ongoingResults = ongoingAuctions.executeQuery();
                     <td><%= ongoingResults.getString("make") %></td>
                     <td><%= ongoingResults.getString("model") %></td>
                     <td><%= ongoingResults.getInt("year") %></td>
-                    <td><%= ongoingResults.getFloat("highest_bid") %></td>
+                    <td>$<%= ongoingResults.getFloat("highest_bid") %></td>
                     <td><%= ongoingResults.getTimestamp("close_time") %></td>
                 </tr>
             <% } %>
@@ -163,10 +181,12 @@ ResultSet ongoingResults = ongoingAuctions.executeQuery();
     </table>
 
     <!-- Logout and Back buttons -->
-    <br>
-    <a href='logout.jsp'>Log out</a>
-    <br><br>
-    <button class="green" onclick="window.location.href='BuyMe.jsp'">Back</button>
+    <div class="logout">
+        <a href='logout.jsp'>Log out</a>
+    </div>
+    <div class="back-button">
+        <button class="green" onclick="window.location.href='BuyMe.jsp'">Back</button>
+    </div>
 </div>
 </body>
 </html>
