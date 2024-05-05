@@ -73,7 +73,7 @@
         
         <!-- Additional vehicle fields as per schema -->
         <label for="mileage">Mileage:</label>
-        <input type="number" id="mileage" name="mileage">
+        <input type="number" id="mileage" name="mileage" required>
         
         <label for="color">Color:</label>
         <input type="text" id="color" name="color">
@@ -143,18 +143,22 @@
         String model = request.getParameter("model");
         String year = request.getParameter("year");
         // Additional vehicle parameters
-        String mileage = request.getParameter("mileage") != null ? String.valueOf(request.getParameter("mileage")) : "-1";
+        String mileage = request.getParameter("mileage");
+        String mileageFormatted = (mileage == null || mileage.isEmpty()) ? "-1" : request.getParameter("mileage");
         String color = request.getParameter("color");
         String body_style = request.getParameter("body_style");
         String power_train = request.getParameter("power_train");
         String condition = request.getParameter("condition");
-        String fuel_efficiency = request.getParameter("fuel_efficiency") != null ? String.valueOf(request.getParameter("fuel_efficiency")) : "-1";
+        String fuel_efficiency = request.getParameter("fuel_efficiency");
+        String fuel_efficiencyFormatted = (fuel_efficiency == null || fuel_efficiency.isEmpty()) ? "-1" : request.getParameter("fuel_efficiency");
         String type = request.getParameter("type");
         String is_self_driving = request.getParameter("is_self_driving");
         String has_car_play = request.getParameter("has_car_play");
         String is_remote_start = request.getParameter("is_remote_start");
-        String capacity = request.getParameter("capacity") != null ? String.valueOf(request.getParameter("capacity")) : "-1";
-        String engine_cc = request.getParameter("engine_cc") != null ? String.valueOf(request.getParameter("engine_cc")) : "-1";
+        String capacity = request.getParameter("capacity"); 
+        String capacityFormatted = (capacity == null || capacity.isEmpty()) ? "-1" : request.getParameter("capacity");
+        String engine_cc = request.getParameter("engine_cc");
+        String engine_ccFormatted = (engine_cc == null || engine_cc.isEmpty()) ? "-1" : request.getParameter("engine_cc");
         
         String initialPrice = request.getParameter("initial_price");
         String secretMinimumPrice = request.getParameter("secret_minimum_price");
@@ -188,13 +192,13 @@
 				psVehicle.setString(7, body_style);
 				psVehicle.setString(8, power_train);
 				psVehicle.setString(9, condition);
-				psVehicle.setFloat(10, Float.parseFloat(fuel_efficiency));
+				psVehicle.setFloat(10, Float.parseFloat(fuel_efficiencyFormatted));
 				psVehicle.setString(11, type);
 				psVehicle.setBoolean(12, Boolean.parseBoolean(is_self_driving));
 				psVehicle.setBoolean(13, Boolean.parseBoolean(has_car_play));
 				psVehicle.setBoolean(14, Boolean.parseBoolean(is_remote_start));
-				psVehicle.setInt(15, Integer.parseInt(capacity));
-				psVehicle.setInt(16, Integer.parseInt(engine_cc));
+				psVehicle.setInt(15, Integer.parseInt(capacityFormatted));
+				psVehicle.setInt(16, Integer.parseInt(engine_ccFormatted));
 				psVehicle.executeUpdate();
 
 
