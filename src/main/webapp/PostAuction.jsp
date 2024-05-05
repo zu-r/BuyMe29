@@ -178,24 +178,52 @@
                 }
 
                 // Insert Vehicle
-  				PreparedStatement psVehicle = con.prepareStatement("INSERT INTO vehicles (VIN, make, model, year, mileage, color, body_style, power_train, `condition`, fuel_efficiency, type, is_self_driving, has_car_play, is_remote_start, capacity, engine_cc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+				// Correct handling of optional fields and converting dropdown selections to boolean
+				PreparedStatement psVehicle = con.prepareStatement("INSERT INTO vehicles (VIN, make, model, year, mileage, color, body_style, power_train, `condition`, fuel_efficiency, type, is_self_driving, has_car_play, is_remote_start, capacity, engine_cc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 				psVehicle.setString(1, VIN);
 				psVehicle.setString(2, make);
 				psVehicle.setString(3, model);
 				psVehicle.setInt(4, Integer.parseInt(year));
-				psVehicle.setInt(5, mileage != null && !mileage.isEmpty() ? Integer.parseInt(mileage) : java.sql.Types.INTEGER);
+				
+				// Check if optional fields are empty and set to NULL accordingly
+				if (mileage != null && !mileage.isEmpty()) {
+				    psVehicle.setInt(5, Integer.parseInt(mileage));
+				} else {
+				    psVehicle.setNull(5, java.sql.Types.INTEGER);
+				}
+				
 				psVehicle.setString(6, color);
 				psVehicle.setString(7, body_style);
 				psVehicle.setString(8, power_train);
 				psVehicle.setString(9, condition);
-				psVehicle.setFloat(10, fuel_efficiency != null && !fuel_efficiency.isEmpty() ? Float.parseFloat(fuel_efficiency) : java.sql.Types.FLOAT);
+				
+				if (fuel_efficiency != null && !fuel_efficiency.isEmpty()) {
+				    psVehicle.setFloat(10, Float.parseFloat(fuel_efficiency));
+				} else {
+				    psVehicle.setNull(10, java.sql.Types.FLOAT);
+				}
+				
 				psVehicle.setString(11, type);
-				psVehicle.setBoolean(12, Boolean.parseBoolean(is_self_driving));
-				psVehicle.setBoolean(13, Boolean.parseBoolean(has_car_play));
-				psVehicle.setBoolean(14, Boolean.parseBoolean(is_remote_start));
-				psVehicle.setInt(15, capacity != null && !capacity.isEmpty() ? Integer.parseInt(capacity) : java.sql.Types.INTEGER);
-				psVehicle.setInt(16, engine_cc != null && !engine_cc.isEmpty() ? Integer.parseInt(engine_cc) : java.sql.Types.INTEGER);
+				
+				// Convert "true" or "false" string from form to boolean and set
+				psVehicle.setBoolean(12, "true".equals(is_self_driving));
+				psVehicle.setBoolean(13, "true".equals(has_car_play));
+				psVehicle.setBoolean(14, "true".equals(is_remote_start));
+				
+				if (capacity != null && !capacity.isEmpty()) {
+				    psVehicle.setInt(15, Integer.parseInt(capacity));
+				} else {
+				    psVehicle.setNull(15, java.sql.Types.INTEGER);
+				}
+				
+				if (engine_cc != null && !engine_cc.isEmpty()) {
+				    psVehicle.setInt(16, Integer.parseInt(engine_cc));
+				} else {
+				    psVehicle.setNull(16, java.sql.Types.INTEGER);
+				}
+				
 				psVehicle.executeUpdate();
+
 
 				
                 // Insert Auction
