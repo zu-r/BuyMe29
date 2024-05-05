@@ -222,63 +222,73 @@
     	</form>
 	    <p>
 	<% 
-if (request.getMethod().equals("POST") && "placeBid".equals(request.getParameter("action"))) {
-    if (highestBidder != null && highestBidder.equals(username)) {
-        out.println("You are already the highest bidder on this auction.");
-    } else if (!canBid) {
-        out.println("You cannot bid on this auction as an admin or customer representative.");
-    } else {
-        float bidAmount = Float.parseFloat(request.getParameter("bidAmount"));
-        if (bidAmount >= highestBid + increment) {
-            out.println("Bid placed successfully.");
-            
-            // insert new value into bids table with username, datetime, and new amount
-            LocalDateTime currentDateTime = LocalDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            String formattedDate = currentDateTime.format(formatter);
-            
-         // Prepare the SQL query with placeholders
-            String insertQuery = "INSERT INTO bids (username, auctionID, time, amount) VALUES (?, ?, ?, ?)";
+    LocalDateTime currentDateTime = LocalDateTime.now();
 
-            PreparedStatement preparedStatement = con.prepareStatement(insertQuery);
-                // Set the values for the placeholders
-                preparedStatement.setString(1, username);
-                preparedStatement.setInt(2, auctionID);
-                preparedStatement.setString(3, formattedDate);
-                preparedStatement.setFloat(4, bidAmount);
+    // Parse the endTime from the database (assuming it's stored as a string)
 
-                // Execute the update
-                preparedStatement.executeUpdate();
-                
-                // Optionally, commit the transaction if you're using transactions
-/*                 con.commit();
- */                
-                // Handle success
-                out.println("New bid inserted successfully!");
-          
-            
-            // send alert to highest bidder if not null: insert into alert_inbox new value (highestBidder, 'you have been outbid on the [year] [model] [make]')
-            if (highestBidder != null) {
-                Statement bidAlert = con.createStatement();
-                String alertMessage = "You have been outbid on the " + model + " " + make + "! (VIN: " + vin + ")";
-                String addBidAlert = "insert into alert_inbox values ('" + highestBidder + "', '" + formattedDate + "', '" + alertMessage + "')";
-                bidAlert.executeUpdate(addBidAlert);
-                bidAlert.close();
-            }
-            
-            // update auction row: highest_bidder -> username, highest_bid -> new bid
-            Statement update = con.createStatement();
-            String updateAuction = "update auctions set `highest_bid` = " + bidAmount + ", `highest_bidder` = '" + username + "' where auctionID = " + auctionID;
-            update.executeUpdate(updateAuction);
-            update.close();
-            
-            // refresh by redirecting to this page
-            response.sendRedirect("auctionItemPage.jsp?auctionID=" + auctionID);
-        } else {
-            out.println("Bid amount is too low.");
-        }
-    }
-}
+    // Create a DateTimeFormatter to parse the endTime string
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+    LocalDateTime auctionEndTime = LocalDateTime.parse(endTime, formatter);
+
+    if (currentDateTime.isBefore(auctionEndTime)) {
+
+		if (request.getMethod().equals("POST") && "placeBid".equals(request.getParameter("action"))) {
+		    if (highestBidder != null && highestBidder.equals(username)) {
+		        out.println("You are already the highest bidder on this auction.");
+		    } else if (!canBid) {
+		        out.println("You cannot bid on this auction as an admin or customer representative.");
+		    } else {
+		        float bidAmount = Float.parseFloat(request.getParameter("bidAmount"));
+		        if (bidAmount >= highestBid + increment && highestBid >= price) {
+		            out.println("Bid placed successfully.");
+		            
+		            // insert new value into bids table with username, datetime, and new amount
+		           
+		            String formattedDate = currentDateTime.format(formatter);
+		            
+		         // Prepare the SQL query with placeholders
+		            String insertQuery = "INSERT INTO bids (username, auctionID, time, amount) VALUES (?, ?, ?, ?)";
+		
+		            PreparedStatement preparedStatement = con.prepareStatement(insertQuery);
+		                // Set the values for the placeholders
+		                preparedStatement.setString(1, username);
+		                preparedStatement.setInt(2, auctionID);
+		                preparedStatement.setString(3, formattedDate);
+		                preparedStatement.setFloat(4, bidAmount);
+		
+		                // Execute the update
+		                preparedStatement.executeUpdate();
+		                
+		                // Optionally, commit the transaction if you're using transactions
+		/*                 con.commit();
+		 */                
+		                // Handle success
+		                out.println("New bid inserted successfully!");
+		          
+		            
+		            // send alert to highest bidder if not null: insert into alert_inbox new value (highestBidder, 'you have been outbid on the [year] [model] [make]')
+		            if (highestBidder != null) {
+		                Statement bidAlert = con.createStatement();
+		                String alertMessage = "You have been outbid on the " + model + " " + make + "! (VIN: " + vin + ")";
+		                String addBidAlert = "insert into alert_inbox values ('" + highestBidder + "', '" + formattedDate + "', '" + alertMessage + "')";
+		                bidAlert.executeUpdate(addBidAlert);
+		                bidAlert.close();
+		            }
+		            
+		            // update auction row: highest_bidder -> username, highest_bid -> new bid
+		            Statement update = con.createStatement();
+		            String updateAuction = "update auctions set `highest_bid` = " + bidAmount + ", `highest_bidder` = '" + username + "' where auctionID = " + auctionID;
+		            update.executeUpdate(updateAuction);
+		            update.close();
+		            
+		            // refresh by redirecting to this page
+		            response.sendRedirect("auctionItemPage.jsp?auctionID=" + auctionID);
+		        } else {
+		            out.println("Bid amount is too low.");
+		        }
+		    }
+		}
+    }else out.println("Bidding time has passed");
 %>
 
 	    </p>
