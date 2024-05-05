@@ -64,9 +64,9 @@
 <body>
 <div class="container">
     <h1>My Auctions</h1>
-
-    <!-- Add Auction Button -->
-    <button class="add-button green" onclick="window.location.href='PostAuction.jsp'">+ Add New Auction</button>
+    
+        <button class="add-button green" onclick="window.location.href='PostAuction.jsp'">+ Add New Auction</button>
+    
 
     <h2>Completed Auctions</h2>
     <table>
@@ -136,13 +136,12 @@
                         Timestamp closeTime = ongoingResults.getTimestamp("close_time");
             %>
             <tr>
-                <td><%= make %></td
+                <td><%= make %></td>
                 <td><%= model %></td>
                 <td><%= year %></td>
                 <td><%= highestBid %></td>
                 <td><%= closeTime %></td>
             </tr>
-
             <%
                     }
                     con.close();

@@ -197,7 +197,7 @@
 				psVehicle.setInt(16, engine_cc != null && !engine_cc.isEmpty() ? Integer.parseInt(engine_cc) : java.sql.Types.INTEGER);
 				psVehicle.executeUpdate();
 
-
+				
                 // Insert Auction
 				PreparedStatement psAuction = con.prepareStatement("INSERT INTO auctions (auctionID, VIN, initial_price, secret_minimum_price, increment, close_time, seller, highest_bid, highest_bidder) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, NULL)");
 				psAuction.setInt(1, auctionID);
