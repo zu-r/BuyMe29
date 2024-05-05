@@ -97,6 +97,68 @@
 		<a href="help.jsp">Help</a>
 		<a href="logout.jsp">Log Out</a>
 	</nav>
+	    <script>
+        function dismissAlert(auctionID) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "DismissAlert.jsp", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    document.getElementById('alert-' + auctionID).style.display = 'none';
+                }
+            };
+            xhr.send("auctionID=" + auctionID);
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Welcome to BuyMe</h1>
+        <p>Your Online Marketplace</p>
+    </header>
+
+    <%-- Include Alerts Here --%>
+    <%
+        HttpSession session2 = request.getSession();
+
+            try {
+            	String userID = (String) session2.getAttribute("user");
+
+                Class.forName("com.mysql.jdbc.Driver");
+                Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BuyMe29", "root", "password");
+                String query = "SELECT a.auctionID, v.make, v.model FROM auctions a " +
+                               "JOIN vehicles v ON a.VIN = v.VIN " +
+                               "JOIN interested_items i ON v.make = i.make AND v.model = i.model " +
+                               "LEFT JOIN dismissed_alerts d ON a.auctionID = d.auctionID AND d.username = ? " +
+                               "WHERE i.username = ? AND a.close_time > NOW() AND d.auctionID IS NULL " +
+                               "ORDER BY a.close_time ASC";
+
+                PreparedStatement stmt = con.prepareStatement(query);
+                stmt.setString(1, userID);
+                stmt.setString(2, userID);
+                ResultSet rs = stmt.executeQuery();
+
+                while (rs.next()) {
+                    int auctionID = rs.getInt("auctionID");
+                    String make = rs.getString("make");
+                    String model = rs.getString("model");
+    %>
+                    <div id="alert-<%= auctionID %>" class="alert">
+                        New auction for <%= make %> <%= model %>! Auction ID: <%= auctionID %>
+                        <button onclick="dismissAlert(<%= auctionID %>)">Dismiss</button>
+                    </div>
+    <%
+                }
+                rs.close();
+                stmt.close();
+                con.close();
+            } catch (Exception e) {
+                out.println("Error retrieving alerts: " + e.getMessage());
+                e.printStackTrace();
+            }
+        
+    %>
+	
 
     <div class="search-container">
         <h2>Get them before they are gone!</h2>
